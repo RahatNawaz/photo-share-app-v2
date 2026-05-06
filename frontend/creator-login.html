@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Creator Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html">← Back</a>
+    <h1>Creator Login</h1>
+
+    <form id="creatorLoginForm">
+        <input type="email" id="creatorEmail" placeholder="Creator Email" required>
+        <input type="password" id="creatorPassword" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+
+    <p id="loginMessage"></p>
+</div>
+
+<script>
+document.getElementById("creatorLoginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("creatorEmail").value;
+    const password = document.getElementById("creatorPassword").value;
+
+    if (email === "creator@gmail.com" && password === "creator123") {
+        localStorage.setItem("role", "creator");
+        window.location.href = "creator.html";
+    } else {
+        document.getElementById("loginMessage").innerText = "Invalid creator login.";
+    }
+});
+</script>
+
+</body>
+</html>

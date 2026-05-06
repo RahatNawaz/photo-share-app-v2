@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Creator Upload</title>
+    <a href="creator-dashboard.html" class="btn secondary">View My Uploads</a>
+    <button onclick="logoutCreator()">Logout</button>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html">← Back</a>
+    <h1>Creator Upload</h1>
+
+    <form id="uploadForm">
+        <input type="text" id="title" placeholder="Title" required>
+        <textarea id="caption" placeholder="Caption" required></textarea>
+        <input type="text" id="location" placeholder="Location">
+        <input type="text" id="people" placeholder="People present">
+        <input type="file" id="image" accept="image/*" required>
+
+        <button type="submit">Upload Image</button>
+    </form>
+
+    <p id="uploadMessage"></p>
+</div>
+
+<script>
+if (localStorage.getItem("role") !== "creator") {
+    window.location.href = "creator-login.html";
+}
+</script>
+
+<script>
+function logoutCreator() {
+    localStorage.removeItem("role");
+    window.location.href = "index.html";
+}
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

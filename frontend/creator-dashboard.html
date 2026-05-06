@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Creator Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <a href="creator.html">← Upload New Image</a>
+    <button onclick="logoutCreator()">Logout</button>
+
+    <h1>Creator Dashboard</h1>
+    <p>View uploaded media content and metadata.</p>
+
+    <div id="creatorGallery" class="gallery"></div>
+</div>
+
+<script>
+if (localStorage.getItem("role") !== "creator") {
+    window.location.href = "creator-login.html";
+}
+
+function logoutCreator() {
+    localStorage.removeItem("role");
+    window.location.href = "index.html";
+}
+</script>
+
+<script src="script.js"></script>
+<script>
+    loadCreatorImages();
+</script>
+
+</body>
+</html>
