@@ -7,17 +7,13 @@ load_dotenv()
 
 COSMOS_ENDPOINT = os.getenv("COSMOS_ENDPOINT")
 COSMOS_KEY = os.getenv("COSMOS_KEY")
-DATABASE_NAME = os.getenv("COSMOS_DATABASE")
-CONTAINER_NAME = os.getenv("COSMOS_CONTAINER")
+DATABASE_NAME = os.getenv("COSMOS_DATABASE", "PhotoShareDB")
+CONTAINER_NAME = os.getenv("COSMOS_CONTAINER", "Images")
 
 client = CosmosClient(COSMOS_ENDPOINT, credential=COSMOS_KEY)
 
-database = client.create_database_if_not_exists(id=DATABASE_NAME)
-
-container = database.create_container_if_not_exists(
-    id=CONTAINER_NAME,
-    partition_key="/id"
-)
+database = client.get_database_client(DATABASE_NAME)
+container = database.get_container_client(CONTAINER_NAME)
 
 def save_metadata(data):
     data["id"] = str(uuid.uuid4())
@@ -25,9 +21,8 @@ def save_metadata(data):
     return data
 
 def get_all_images():
-    query = "SELECT * FROM c"
     return list(container.query_items(
-        query=query,
+        query="SELECT * FROM c",
         enable_cross_partition_query=True
     ))
 
@@ -39,9 +34,7 @@ def search_images(keyword):
     OR CONTAINS(LOWER(c.location), LOWER(@keyword))
     """
 
-    parameters = [
-        {"name": "@keyword", "value": keyword}
-    ]
+    parameters = [{"name": "@keyword", "value": keyword}]
 
     return list(container.query_items(
         query=query,
