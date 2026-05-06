@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Creator Upload</title>
+    <a href="creator-dashboard.html" class="btn secondary">View My Uploads</a>
     <button onclick="logoutCreator()">Logout</button>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -26,7 +27,7 @@
 
 <script>
 if (localStorage.getItem("role") !== "creator") {
-    window.location.href = "creator_login.html";
+    window.location.href = "creator-login.html";
 }
 </script>
 

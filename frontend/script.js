@@ -275,3 +275,43 @@ async function loadSingleImage() {
         container.innerHTML = "<p>Could not load image details.</p>";
     }
 }
+
+async function loadCreatorImages() {
+    const gallery = document.getElementById("creatorGallery");
+    gallery.innerHTML = "<p>Loading uploaded images...</p>";
+
+    try {
+        const response = await fetch(`${API_URL}/api/images`);
+        const images = await response.json();
+
+        if (!images || images.length === 0) {
+            gallery.innerHTML = "<p>No uploads found.</p>";
+            return;
+        }
+
+        gallery.innerHTML = "";
+
+        images.forEach(image => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            card.innerHTML = `
+                <img src="${image.imageUrl}" alt="${image.title}">
+                <div class="card-content">
+                    <h3>${image.title || "Untitled"}</h3>
+                    <p>${image.caption || ""}</p>
+                    <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
+                    <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
+                    <p><strong>Comments:</strong> ${(image.comments || []).length}</p>
+                    <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
+                </div>
+            `;
+
+            gallery.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error(error);
+        gallery.innerHTML = "<p>Could not load creator dashboard.</p>";
+    }
+}
