@@ -86,14 +86,108 @@ function displayImages(images) {
 
         card.innerHTML = `
             <img src="${image.imageUrl}" alt="${image.title}">
+            
             <div class="card-content">
                 <h3>${image.title || "Untitled"}</h3>
+
                 <p>${image.caption || ""}</p>
-                <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
-                <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
+
+                <p class="meta">
+                    <strong>Location:</strong> ${image.location || "N/A"}
+                </p>
+
+                <p class="meta">
+                    <strong>People:</strong> ${image.people || "N/A"}
+                </p>
+
+                <hr>
+
+                <h4>Comments</h4>
+
+                <div>
+                    ${(image.comments || [])
+                        .map(c => `<p>• ${c}</p>`)
+                        .join("")}
+                </div>
+
+                <input 
+                    type="text" 
+                    id="comment-${image.id}" 
+                    placeholder="Add comment"
+                >
+
+                <button onclick="addComment('${image.id}')">
+                    Comment
+                </button>
+
+                <hr>
+
+                <h4>Rate Image</h4>
+
+                <select id="rating-${image.id}">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+
+                <button onclick="addRating('${image.id}')">
+                    Rate
+                </button>
+
+                <p>
+                    <strong>Average Rating:</strong>
+                    ${calculateAverage(image.ratings)}
+                </p>
             </div>
         `;
 
         gallery.appendChild(card);
     });
+}
+
+async function addComment(imageId) {
+
+    const input = document.getElementById(`comment-${imageId}`);
+
+    const comment = input.value;
+
+    if (!comment) return;
+
+    await fetch(`${API_URL}/api/images/${imageId}/comment`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ comment })
+    });
+
+    loadImages();
+}
+
+async function addRating(imageId) {
+
+    const rating = document.getElementById(`rating-${imageId}`).value;
+
+    await fetch(`${API_URL}/api/images/${imageId}/rating`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ rating })
+    });
+
+    loadImages();
+}
+
+function calculateAverage(ratings) {
+
+    if (!ratings || ratings.length === 0) {
+        return "No ratings";
+    }
+
+    const sum = ratings.reduce((a, b) => a + b, 0);
+
+    return (sum / ratings.length).toFixed(1);
 }

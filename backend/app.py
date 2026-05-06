@@ -1,7 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from blob_service import upload_image
-from cosmos_service import save_metadata, get_all_images, search_images
+from cosmos_service import (
+    save_metadata,
+    get_all_images,
+    search_images,
+    container
+)
 
 app = Flask(__name__)
 CORS(app)
@@ -44,6 +49,40 @@ def search():
     keyword = request.args.get("q", "")
     data = search_images(keyword)
     return jsonify(data)
+
+@app.route("/api/images/<image_id>/comment", methods=["POST"])
+def add_comment(image_id):
+
+    data = request.json
+    comment = data.get("comment")
+
+    item = container.read_item(item=image_id, partition_key=image_id)
+
+    if "comments" not in item:
+        item["comments"] = []
+
+    item["comments"].append(comment)
+
+    container.replace_item(item=image_id, body=item)
+
+    return jsonify({"message": "Comment added"})
+
+@app.route("/api/images/<image_id>/rating", methods=["POST"])
+def add_rating(image_id):
+
+    data = request.json
+    rating = int(data.get("rating"))
+
+    item = container.read_item(item=image_id, partition_key=image_id)
+
+    if "ratings" not in item:
+        item["ratings"] = []
+
+    item["ratings"].append(rating)
+
+    container.replace_item(item=image_id, body=item)
+
+    return jsonify({"message": "Rating added"})
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
