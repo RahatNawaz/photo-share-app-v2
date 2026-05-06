@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consumer Gallery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html">← Back</a>
+    <h1>Consumer Gallery</h1>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search by title, caption, or location">
+        <button onclick="searchImages()">Search</button>
+        <button onclick="loadImages()">Show All</button>
+    </div>
+
+    <div id="gallery" class="gallery"></div>
+</div>
+
+<script src="script.js"></script>
+<script>
+    loadImages();
+</script>
+
+</body>
+</html>

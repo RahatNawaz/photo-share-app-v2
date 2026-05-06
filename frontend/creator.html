@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Creator Upload</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html">← Back</a>
+    <h1>Creator Upload</h1>
+
+    <form id="uploadForm">
+        <input type="text" id="title" placeholder="Title" required>
+        <textarea id="caption" placeholder="Caption" required></textarea>
+        <input type="text" id="location" placeholder="Location">
+        <input type="text" id="people" placeholder="People present">
+        <input type="file" id="image" accept="image/*" required>
+
+        <button type="submit">Upload Image</button>
+    </form>
+
+    <p id="uploadMessage"></p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
