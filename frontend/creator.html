@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Creator Upload</title>
+    <button onclick="logoutCreator()">Logout</button>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,6 +23,19 @@
 
     <p id="uploadMessage"></p>
 </div>
+
+<script>
+if (localStorage.getItem("role") !== "creator") {
+    window.location.href = "creator_login.html";
+}
+</script>
+
+<script>
+function logoutCreator() {
+    localStorage.removeItem("role");
+    window.location.href = "index.html";
+}
+</script>
 
 <script src="script.js"></script>
 </body>
