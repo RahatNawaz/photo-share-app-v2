@@ -140,6 +140,8 @@ function displayImages(images) {
                     <strong>Average Rating:</strong>
                     ${calculateAverage(image.ratings)}
                 </p>
+
+                <a class="btn" href="image.html?id=${image.id}">View Details</a>
             </div>
         `;
 
@@ -163,7 +165,11 @@ async function addComment(imageId) {
         body: JSON.stringify({ comment })
     });
 
-    loadImages();
+    if (window.location.pathname.includes("image.html")) {
+        loadSingleImage();
+    } else {
+        loadImages();
+    }
 }
 
 async function addRating(imageId) {
@@ -178,7 +184,11 @@ async function addRating(imageId) {
         body: JSON.stringify({ rating })
     });
 
-    loadImages();
+    if (window.location.pathname.includes("image.html")) {
+        loadSingleImage();
+    } else {
+        loadImages();
+    }
 }
 
 function calculateAverage(ratings) {
@@ -190,4 +200,78 @@ function calculateAverage(ratings) {
     const sum = ratings.reduce((a, b) => a + b, 0);
 
     return (sum / ratings.length).toFixed(1);
+}
+
+async function loadSingleImage() {
+    const params = new URLSearchParams(window.location.search);
+    const imageId = params.get("id");
+
+    const container = document.getElementById("imageDetails");
+
+    if (!imageId) {
+        container.innerHTML = "<p>No image selected.</p>";
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/images/${imageId}`);
+        const image = await response.json();
+
+        container.innerHTML = `
+            <div class="card">
+                <img src="${image.imageUrl}" alt="${image.title}">
+
+                <div class="card-content">
+                    <h1>${image.title || "Untitled"}</h1>
+                    <p>${image.caption || ""}</p>
+
+                    <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
+                    <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
+
+                    <hr>
+
+                    <h3>Comments</h3>
+                    <div>
+                        ${(image.comments || [])
+                            .map(c => `<p>• ${c}</p>`)
+                            .join("")}
+                    </div>
+
+                    <input 
+                        type="text" 
+                        id="comment-${image.id}" 
+                        placeholder="Add comment"
+                    >
+
+                    <button onclick="addComment('${image.id}')">
+                        Comment
+                    </button>
+
+                    <hr>
+
+                    <h3>Rate Image</h3>
+
+                    <select id="rating-${image.id}">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+
+                    <button onclick="addRating('${image.id}')">
+                        Rate
+                    </button>
+
+                    <p>
+                        <strong>Average Rating:</strong>
+                        ${calculateAverage(image.ratings)}
+                    </p>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = "<p>Could not load image details.</p>";
+    }
 }

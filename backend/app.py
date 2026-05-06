@@ -84,5 +84,10 @@ def add_rating(image_id):
 
     return jsonify({"message": "Rating added"})
 
+@app.route("/api/images/<image_id>", methods=["GET"])
+def get_single_image(image_id):
+    item = container.read_item(item=image_id, partition_key=image_id)
+    return jsonify(item)
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
