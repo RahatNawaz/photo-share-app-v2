@@ -304,6 +304,7 @@ async function loadCreatorImages() {
                     <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
                     <p><strong>Comments:</strong> ${(image.comments || []).length}</p>
                     <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
+                    <button onclick="deleteImage('${image.id}')">Delete</button>
                 </div>
             `;
 
@@ -313,5 +314,29 @@ async function loadCreatorImages() {
     } catch (error) {
         console.error(error);
         gallery.innerHTML = "<p>Could not load creator dashboard.</p>";
+    }
+}
+
+async function deleteImage(imageId) {
+    const confirmDelete = confirm("Are you sure you want to delete this image?");
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/images/${imageId}`, {
+            method: "DELETE"
+        });
+
+        if (response.ok) {
+            alert("Image deleted successfully.");
+            loadCreatorImages();
+        } else {
+            alert("Failed to delete image.");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Could not connect to backend.");
     }
 }

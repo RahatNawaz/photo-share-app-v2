@@ -89,5 +89,10 @@ def get_single_image(image_id):
     item = container.read_item(item=image_id, partition_key=image_id)
     return jsonify(item)
 
+@app.route("/api/images/<image_id>", methods=["DELETE"])
+def delete_image(image_id):
+    container.delete_item(item=image_id, partition_key=image_id)
+    return jsonify({"message": "Image deleted successfully"})
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
