@@ -305,6 +305,7 @@ async function loadCreatorImages() {
                     <p><strong>Comments:</strong> ${(image.comments || []).length}</p>
                     <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
                     <button onclick="deleteImage('${image.id}')">Delete</button>
+                    <button onclick="editImage('${image.id}')">Edit</button>
                 </div>
             `;
 
@@ -339,4 +340,48 @@ async function deleteImage(imageId) {
         console.error(error);
         alert("Could not connect to backend.");
     }
+}
+
+function editImage(imageId) {
+    window.location.href = `edit-image.html?id=${imageId}`;
+}
+
+async function loadEditForm() {
+    const params = new URLSearchParams(window.location.search);
+    const imageId = params.get("id");
+
+    const response = await fetch(`${API_URL}/api/images/${imageId}`);
+    const image = await response.json();
+
+    document.getElementById("editTitle").value = image.title || "";
+    document.getElementById("editCaption").value = image.caption || "";
+    document.getElementById("editLocation").value = image.location || "";
+    document.getElementById("editPeople").value = image.people || "";
+
+    const form = document.getElementById("editImageForm");
+
+    form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const updatedData = {
+            title: document.getElementById("editTitle").value,
+            caption: document.getElementById("editCaption").value,
+            location: document.getElementById("editLocation").value,
+            people: document.getElementById("editPeople").value
+        };
+
+        const updateResponse = await fetch(`${API_URL}/api/images/${imageId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        if (updateResponse.ok) {
+            document.getElementById("editMessage").innerText = "Metadata updated successfully!";
+        } else {
+            document.getElementById("editMessage").innerText = "Update failed.";
+        }
+    });
 }

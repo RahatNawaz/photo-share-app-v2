@@ -94,5 +94,23 @@ def delete_image(image_id):
     container.delete_item(item=image_id, partition_key=image_id)
     return jsonify({"message": "Image deleted successfully"})
 
+@app.route("/api/images/<image_id>", methods=["PUT"])
+def update_image(image_id):
+    data = request.json
+
+    item = container.read_item(item=image_id, partition_key=image_id)
+
+    item["title"] = data.get("title", item.get("title"))
+    item["caption"] = data.get("caption", item.get("caption"))
+    item["location"] = data.get("location", item.get("location"))
+    item["people"] = data.get("people", item.get("people"))
+
+    container.replace_item(item=image_id, body=item)
+
+    return jsonify({
+        "message": "Image metadata updated successfully",
+        "data": item
+    })
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
