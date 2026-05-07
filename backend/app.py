@@ -52,7 +52,6 @@ def search():
 
 @app.route("/api/images/<image_id>/comment", methods=["POST"])
 def add_comment(image_id):
-
     data = request.json
     comment = data.get("comment")
 

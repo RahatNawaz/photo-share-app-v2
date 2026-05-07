@@ -106,7 +106,7 @@ function displayImages(images) {
 
                 <div>
                     ${(image.comments || [])
-                        .map(c => `<p>• ${c}</p>`)
+                        .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                         .join("")}
                 </div>
 
@@ -150,12 +150,17 @@ function displayImages(images) {
 }
 
 async function addComment(imageId) {
-
     const input = document.getElementById(`comment-${imageId}`);
+    const commentText = input.value;
 
-    const comment = input.value;
+    if (!commentText) return;
 
-    if (!comment) return;
+    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
+
+    const comment = {
+        name: consumerName,
+        text: commentText
+    };
 
     await fetch(`${API_URL}/api/images/${imageId}/comment`, {
         method: "POST",
@@ -233,7 +238,7 @@ async function loadSingleImage() {
                     <h3>Comments</h3>
                     <div>
                         ${(image.comments || [])
-                            .map(c => `<p>• ${c}</p>`)
+                            .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                             .join("")}
                     </div>
 
