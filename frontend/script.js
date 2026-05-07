@@ -147,6 +147,10 @@ function displayImages(images) {
                     ❤️ Like
                 </button>
 
+                <p class="meta">
+                <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
+                </p>
+
                 <a class="btn" href="image.html?id=${image.id}">View Details</a>
             </div>
         `;
@@ -295,6 +299,10 @@ async function loadSingleImage() {
                     <button onclick="likeImage('${image.id}')">
                         ❤️ Like
                     </button>
+
+                    <p class="meta">
+                    <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
+                    </p>
                 </div>
             </div>
         `;
