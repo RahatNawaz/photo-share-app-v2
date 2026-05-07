@@ -110,5 +110,22 @@ def update_image(image_id):
         "data": item
     })
 
+@app.route("/api/images/<image_id>/like", methods=["POST"])
+def like_image(image_id):
+
+    item = container.read_item(item=image_id, partition_key=image_id)
+
+    if "likes" not in item:
+        item["likes"] = 0
+
+    item["likes"] += 1
+
+    container.replace_item(item=image_id, body=item)
+
+    return jsonify({
+        "message": "Image liked",
+        "likes": item["likes"]
+    })
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

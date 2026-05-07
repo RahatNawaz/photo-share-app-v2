@@ -141,6 +141,12 @@ function displayImages(images) {
                     ${calculateAverage(image.ratings)}
                 </p>
 
+                <p><strong>Likes:</strong> ${image.likes || 0}</p>
+
+                <button onclick="likeImage('${image.id}')">
+                    ❤️ Like
+                </button>
+
                 <a class="btn" href="image.html?id=${image.id}">View Details</a>
             </div>
         `;
@@ -283,6 +289,12 @@ async function loadSingleImage() {
                         <strong>Average Rating:</strong>
                         ${calculateAverage(image.ratings)}
                     </p>
+
+                    <p><strong>Likes:</strong> ${image.likes || 0}</p>
+
+                    <button onclick="likeImage('${image.id}')">
+                        ❤️ Like
+                    </button>
                 </div>
             </div>
         `;
@@ -482,4 +494,17 @@ function logoutConsumer() {
     localStorage.removeItem("consumerEmail");
 
     window.location.href = "index.html";
+}
+
+async function likeImage(imageId) {
+
+    await fetch(`${API_URL}/api/images/${imageId}/like`, {
+        method: "POST"
+    });
+
+    if (window.location.pathname.includes("image.html")) {
+        loadSingleImage();
+    } else {
+        loadImages();
+    }
 }
