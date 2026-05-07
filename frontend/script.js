@@ -98,7 +98,9 @@ function displayImages(images) {
         card.className = "card";
 
         card.innerHTML = `
-            <img src="${image.imageUrl}" alt="${image.title}">
+            <div class="image-box">
+                <img src="${image.imageUrl}" alt="${image.title}">
+            </div>
             
             <div class="card-content">
                 <h3>${image.title || "Untitled"}</h3>
@@ -171,7 +173,9 @@ async function loadSingleImage() {
 
         container.innerHTML = `
             <div class="card">
-                <img src="${image.imageUrl}" alt="${image.title}">
+                <div class="details-image-box">
+                    <img src="${image.imageUrl}" alt="${image.title}">
+                </div>
 
                 <div class="card-content">
                     <h1>${image.title || "Untitled"}</h1>
@@ -345,7 +349,9 @@ async function loadCreatorImages() {
             card.className = "card";
 
             card.innerHTML = `
-                <img src="${image.imageUrl}" alt="${image.title}">
+                <div class="image-box">
+                    <img src="${image.imageUrl}" alt="${image.title}">
+                </div>
                 
                 <div class="card-content">
                     <h3>${image.title || "Untitled"}</h3>

@@ -82,14 +82,28 @@ textarea {
 .card {
     background: white;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .card img {
     width: 100%;
-    height: 220px;
-    object-fit: cover;
+    height: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    object-position: center center;
+    display: block;
+    background: #f3f4f6;
+}
+
+.image-box {
+    width: 100%;
+    height: 300px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .card-content {
@@ -103,4 +117,27 @@ textarea {
 .meta {
     color: #666;
     font-size: 14px;
+}
+
+.gallery .card {
+    overflow: hidden;
+}
+
+.details-image-box {
+    width: 100%;
+    max-height: none;
+    background: #f3f4f6;
+    display: block;
+    overflow: visible;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.details-image-box img {
+    max-width: 100%;
+    width: auto;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: contain;
+    display: block;
 }
