@@ -567,3 +567,137 @@ function logoutConsumer() {
 
     window.location.href = "index.html";
 }
+
+
+// =====================================================
+// CREATOR REGISTER / VERIFY / LOGIN
+// =====================================================
+const creatorRegisterForm = document.getElementById("creatorRegisterForm");
+
+if (creatorRegisterForm) {
+    creatorRegisterForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById("creatorRegisterName").value;
+        const email = document.getElementById("creatorRegisterEmail").value;
+        const password = document.getElementById("creatorRegisterPassword").value;
+
+        const message = document.getElementById("creatorRegisterMessage");
+        message.innerText = "Registering creator and sending verification code...";
+
+        try {
+            const response = await fetch(`${API_URL}/api/creator/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, email, password })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem("pendingCreatorVerifyEmail", email);
+                window.location.href = "verify-creator.html";
+            } else {
+                message.innerText = result.error || "Creator registration failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
+        }
+    });
+}
+
+const verifyCreatorForm = document.getElementById("verifyCreatorForm");
+
+if (verifyCreatorForm) {
+    const savedEmail = localStorage.getItem("pendingCreatorVerifyEmail");
+
+    if (savedEmail) {
+        document.getElementById("verifyCreatorEmail").value = savedEmail;
+    }
+
+    verifyCreatorForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("verifyCreatorEmail").value;
+        const code = document.getElementById("verifyCreatorCode").value;
+
+        const message = document.getElementById("verifyCreatorMessage");
+        message.innerText = "Verifying creator email...";
+
+        try {
+            const response = await fetch(`${API_URL}/api/creator/verify`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, code })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.removeItem("pendingCreatorVerifyEmail");
+                message.innerText = "Creator verified successfully. You can now login.";
+
+                setTimeout(() => {
+                    window.location.href = "creator-login.html";
+                }, 1000);
+            } else {
+                message.innerText = result.error || "Creator verification failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
+        }
+    });
+}
+
+const creatorLoginForm = document.getElementById("creatorLoginForm");
+
+if (creatorLoginForm) {
+    creatorLoginForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("creatorEmail").value;
+        const password = document.getElementById("creatorPassword").value;
+
+        const message = document.getElementById("loginMessage");
+        message.innerText = "Logging in...";
+
+        try {
+            const response = await fetch(`${API_URL}/api/creator/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem("role", result.role);
+                localStorage.setItem("creatorName", result.name);
+                localStorage.setItem("creatorEmail", result.email);
+
+                window.location.href = "creator.html";
+            } else {
+                message.innerText = result.error || "Creator login failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
+        }
+    });
+}
+
+function logoutCreator() {
+    localStorage.removeItem("role");
+    localStorage.removeItem("creatorName");
+    localStorage.removeItem("creatorEmail");
+
+    window.location.href = "index.html";
+}

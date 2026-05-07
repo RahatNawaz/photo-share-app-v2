@@ -17,23 +17,14 @@
     </form>
 
     <p id="loginMessage"></p>
+
+    <p>New creator?</p>
+    <a href="creator-register.html" class="btn secondary">Register Creator</a>
+
+    <p>Already registered but not verified?</p>
+    <a href="verify-creator.html" class="btn secondary">Verify Creator Email</a>
 </div>
 
-<script>
-document.getElementById("creatorLoginForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const email = document.getElementById("creatorEmail").value;
-    const password = document.getElementById("creatorPassword").value;
-
-    if (email === "creator@gmail.com" && password === "creator123") {
-        localStorage.setItem("role", "creator");
-        window.location.href = "creator.html";
-    } else {
-        document.getElementById("loginMessage").innerText = "Invalid creator login.";
-    }
-});
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>

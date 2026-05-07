@@ -173,6 +173,8 @@ def consumer_register():
 
     if not name or not email or not password:
         return jsonify({"error": "All fields are required"}), 400
+    
+    user_id = f"consumer_{email}"
 
     existing_users = list(container.query_items(
         query="SELECT * FROM c WHERE c.type = 'consumer' AND c.email = @email",
@@ -186,7 +188,7 @@ def consumer_register():
     verification_code = str(random.randint(100000, 999999))
 
     user = {
-        "id": email,
+        "id": user_id,
         "type": "consumer",
         "name": name,
         "email": email,
@@ -218,7 +220,8 @@ def verify_consumer():
     email = data.get("email")
     code = data.get("code")
 
-    item = container.read_item(item=email, partition_key=email)
+    user_id = f"consumer_{email}"
+    item = container.read_item(item=user_id, partition_key=user_id)
 
     if item.get("verificationCode") != code:
         return jsonify({"error": "Invalid verification code"}), 400
@@ -226,7 +229,7 @@ def verify_consumer():
     item["verified"] = True
     item["verificationCode"] = None
 
-    container.replace_item(item=email, body=item)
+    container.replace_item(item=user_id, body=item)
 
     return jsonify({"message": "Email verified successfully"})
 
@@ -237,8 +240,9 @@ def consumer_login():
     email = data.get("email")
     password = data.get("password")
 
+    user_id = f"consumer_{email}"
     try:
-        user = container.read_item(item=email, partition_key=email)
+        user = container.read_item(item=user_id, partition_key=user_id)
     except:
         return jsonify({"error": "Invalid email or password"}), 400
 
@@ -256,6 +260,105 @@ def consumer_login():
         "name": user["name"],
         "email": user["email"],
         "role": "consumer"
+    })
+
+
+@app.route("/api/creator/register", methods=["POST"])
+def creator_register():
+    data = request.json
+
+    name = data.get("name")
+    email = data.get("email")
+    password = data.get("password")
+
+    if not name or not email or not password:
+        return jsonify({"error": "All fields are required"}), 400
+
+    user_id = f"creator_{email}"
+
+    try:
+        container.read_item(item=user_id, partition_key=user_id)
+        return jsonify({"error": "Creator email already registered"}), 400
+    except:
+        pass
+
+    verification_code = str(random.randint(100000, 999999))
+
+    user = {
+        "id": user_id,
+        "type": "creator",
+        "name": name,
+        "email": email,
+        "password": generate_password_hash(password),
+        "verified": False,
+        "verificationCode": verification_code
+    }
+
+    container.create_item(body=user)
+
+    msg = Message(
+        subject="Photo Share Creator Verification Code",
+        sender=app.config["MAIL_USERNAME"],
+        recipients=[email]
+    )
+
+    msg.body = f"Your creator verification code is: {verification_code}"
+
+    mail.send(msg)
+
+    return jsonify({
+        "message": "Creator registered. Please check your email for verification code."
+    })
+
+@app.route("/api/creator/verify", methods=["POST"])
+def verify_creator():
+    data = request.json
+
+    email = data.get("email")
+    code = data.get("code")
+
+    user_id = f"creator_{email}"
+
+    item = container.read_item(item=user_id, partition_key=user_id)
+
+    if item.get("verificationCode") != code:
+        return jsonify({"error": "Invalid verification code"}), 400
+
+    item["verified"] = True
+    item["verificationCode"] = None
+
+    container.replace_item(item=user_id, body=item)
+
+    return jsonify({"message": "Creator email verified successfully"})
+
+@app.route("/api/creator/login", methods=["POST"])
+def creator_login():
+    data = request.json
+
+    email = data.get("email")
+    password = data.get("password")
+
+    user_id = f"creator_{email}"
+
+    try:
+        user = container.read_item(item=user_id, partition_key=user_id)
+    except:
+        return jsonify({"error": "Invalid email or password"}), 400
+
+    if user.get("type") != "creator":
+        return jsonify({"error": "Invalid email or password"}), 400
+
+    if not check_password_hash(user["password"], password):
+        return jsonify({"error": "Invalid email or password"}), 400
+
+    if not user.get("verified"):
+        return jsonify({"error": "Please verify your creator email before login"}), 403
+
+    return jsonify({
+        "message": "Creator login successful",
+        "name": user["name"],
+        "email": user["email"],
+        "role": "creator"
     })
 
 if __name__ == "__main__":
