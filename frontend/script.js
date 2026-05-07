@@ -20,6 +20,8 @@ if (uploadForm) {
         formData.append("location", document.getElementById("location").value);
         formData.append("people", document.getElementById("people").value);
         formData.append("image", document.getElementById("image").files[0]);
+        formData.append("creatorEmail", localStorage.getItem("creatorEmail"));
+        formData.append("creatorName", localStorage.getItem("creatorName"));
 
         const message = document.getElementById("uploadMessage");
         message.innerText = "Uploading...";
@@ -312,7 +314,10 @@ async function loadCreatorImages() {
     gallery.innerHTML = "<p>Loading uploaded images...</p>";
 
     try {
-        const response = await fetch(`${API_URL}/api/images`);
+        const creatorEmail = localStorage.getItem("creatorEmail");
+
+        const response = await fetch(`${API_URL}/api/creator/images?email=${encodeURIComponent(creatorEmail)}`);
+        
         const images = await response.json();
 
         if (!images || images.length === 0) {

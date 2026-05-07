@@ -32,6 +32,8 @@ def home():
 @app.route("/api/upload", methods=["POST"])
 def upload():
     image = request.files.get("image")
+    creator_email = request.form.get("creatorEmail", "")
+    creator_name = request.form.get("creatorName", "")
 
     if not image:
         return jsonify({"error": "No image uploaded"}), 400
@@ -60,13 +62,15 @@ def upload():
         auto_tags.append("people")
 
     metadata = {
-        "title": title,
-        "caption": caption,
-        "location": location,
-        "people": people,
-        "imageUrl": image_url,
-        "tags": auto_tags
-    }
+    "title": title,
+    "caption": caption,
+    "location": location,
+    "people": people,
+    "imageUrl": image_url,
+    "tags": auto_tags,
+    "creatorEmail": creator_email,
+    "creatorName": creator_name
+}
 
     saved_data = save_metadata(metadata)
 
@@ -360,6 +364,23 @@ def creator_login():
         "email": user["email"],
         "role": "creator"
     })
+
+@app.route("/api/creator/images", methods=["GET"])
+def creator_images():
+    creator_email = request.args.get("email", "")
+
+    if not creator_email:
+        return jsonify({"error": "Creator email is required"}), 400
+
+    data = list(container.query_items(
+        query="SELECT * FROM c WHERE c.creatorEmail = @creatorEmail",
+        parameters=[
+            {"name": "@creatorEmail", "value": creator_email}
+        ],
+        enable_cross_partition_query=True
+    ))
+
+    return jsonify(data)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
