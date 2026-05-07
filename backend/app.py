@@ -68,9 +68,8 @@ def add_comment(image_id):
 
 @app.route("/api/images/<image_id>/rating", methods=["POST"])
 def add_rating(image_id):
-
     data = request.json
-    rating = int(data.get("rating"))
+    rating = data.get("rating")
 
     item = container.read_item(item=image_id, partition_key=image_id)
 

@@ -178,8 +178,13 @@ async function addComment(imageId) {
 }
 
 async function addRating(imageId) {
+    const ratingValue = document.getElementById(`rating-${imageId}`).value;
+    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
 
-    const rating = document.getElementById(`rating-${imageId}`).value;
+    const rating = {
+        name: consumerName,
+        value: Number(ratingValue)
+    };
 
     await fetch(`${API_URL}/api/images/${imageId}/rating`, {
         method: "POST",
@@ -197,14 +202,20 @@ async function addRating(imageId) {
 }
 
 function calculateAverage(ratings) {
-
     if (!ratings || ratings.length === 0) {
         return "No ratings";
     }
 
-    const sum = ratings.reduce((a, b) => a + b, 0);
+    const values = ratings.map(r => {
+        if (typeof r === "object") {
+            return Number(r.value);
+        }
+        return Number(r);
+    });
 
-    return (sum / ratings.length).toFixed(1);
+    const sum = values.reduce((a, b) => a + b, 0);
+
+    return (sum / values.length).toFixed(1);
 }
 
 async function loadSingleImage() {
@@ -449,4 +460,26 @@ if (consumerLoginForm) {
             document.getElementById("consumerLoginMessage").innerText = "Invalid email or password.";
         }
     });
+}
+
+function showLoggedInUser() {
+    const userBox = document.getElementById("loggedInUser");
+
+    if (userBox) {
+        const name = localStorage.getItem("consumerName");
+
+        if (name) {
+            userBox.innerText = `Logged in as: ${name}`;
+        } else {
+            userBox.innerText = "Logged in as: Consumer";
+        }
+    }
+}
+
+function logoutConsumer() {
+    localStorage.removeItem("role");
+    localStorage.removeItem("consumerName");
+    localStorage.removeItem("consumerEmail");
+
+    window.location.href = "index.html";
 }
