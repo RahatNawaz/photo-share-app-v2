@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from blob_service import upload_image
+from dotenv import load_dotenv
+load_dotenv()
 import os
 from cosmos_service import (
     save_metadata,
