@@ -1,5 +1,12 @@
+// =====================================================
+// CONFIG
+// =====================================================
 const API_URL = "http://127.0.0.1:5000";
 
+
+// =====================================================
+// CREATOR IMAGE UPLOAD
+// =====================================================
 const uploadForm = document.getElementById("uploadForm");
 
 if (uploadForm) {
@@ -38,6 +45,10 @@ if (uploadForm) {
     });
 }
 
+
+// =====================================================
+// CONSUMER GALLERY
+// =====================================================
 async function loadImages() {
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "<p>Loading images...</p>";
@@ -89,36 +100,26 @@ function displayImages(images) {
             
             <div class="card-content">
                 <h3>${image.title || "Untitled"}</h3>
-
                 <p>${image.caption || ""}</p>
 
-                <p class="meta">
-                    <strong>Location:</strong> ${image.location || "N/A"}
-                </p>
+                <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
+                <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
 
                 <p class="meta">
-                    <strong>People:</strong> ${image.people || "N/A"}
+                    <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
                 </p>
 
                 <hr>
 
                 <h4>Comments</h4>
-
                 <div>
                     ${(image.comments || [])
                         .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                         .join("")}
                 </div>
 
-                <input 
-                    type="text" 
-                    id="comment-${image.id}" 
-                    placeholder="Add comment"
-                >
-
-                <button onclick="addComment('${image.id}')">
-                    Comment
-                </button>
+                <input type="text" id="comment-${image.id}" placeholder="Add comment">
+                <button onclick="addComment('${image.id}')">Comment</button>
 
                 <hr>
 
@@ -132,14 +133,12 @@ function displayImages(images) {
                     <option value="5">5</option>
                 </select>
 
-                <button onclick="addRating('${image.id}')">
-                    Rate
-                </button>
+                <button onclick="addRating('${image.id}')">Rate</button>
 
-                <p>
-                    <strong>Average Rating:</strong>
-                    ${calculateAverage(image.ratings)}
-                </p>
+                <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
+                <p><strong>Likes:</strong> ${image.likes || 0}</p>
+
+                <button onclick="likeImage('${image.id}')">❤️ Like</button>
 
                 <a class="btn" href="image.html?id=${image.id}">View Details</a>
             </div>
@@ -149,64 +148,10 @@ function displayImages(images) {
     });
 }
 
-async function addComment(imageId) {
-    const input = document.getElementById(`comment-${imageId}`);
-    const commentText = input.value;
 
-    if (!commentText) return;
-
-    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
-
-    const comment = {
-        name: consumerName,
-        text: commentText
-    };
-
-    await fetch(`${API_URL}/api/images/${imageId}/comment`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ comment })
-    });
-
-    if (window.location.pathname.includes("image.html")) {
-        loadSingleImage();
-    } else {
-        loadImages();
-    }
-}
-
-async function addRating(imageId) {
-
-    const rating = document.getElementById(`rating-${imageId}`).value;
-
-    await fetch(`${API_URL}/api/images/${imageId}/rating`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ rating })
-    });
-
-    if (window.location.pathname.includes("image.html")) {
-        loadSingleImage();
-    } else {
-        loadImages();
-    }
-}
-
-function calculateAverage(ratings) {
-
-    if (!ratings || ratings.length === 0) {
-        return "No ratings";
-    }
-
-    const sum = ratings.reduce((a, b) => a + b, 0);
-
-    return (sum / ratings.length).toFixed(1);
-}
-
+// =====================================================
+// IMAGE DETAILS PAGE
+// =====================================================
 async function loadSingleImage() {
     const params = new URLSearchParams(window.location.search);
     const imageId = params.get("id");
@@ -233,6 +178,10 @@ async function loadSingleImage() {
                     <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
                     <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
 
+                    <p class="meta">
+                        <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
+                    </p>
+
                     <hr>
 
                     <h3>Comments</h3>
@@ -242,15 +191,8 @@ async function loadSingleImage() {
                             .join("")}
                     </div>
 
-                    <input 
-                        type="text" 
-                        id="comment-${image.id}" 
-                        placeholder="Add comment"
-                    >
-
-                    <button onclick="addComment('${image.id}')">
-                        Comment
-                    </button>
+                    <input type="text" id="comment-${image.id}" placeholder="Add comment">
+                    <button onclick="addComment('${image.id}')">Comment</button>
 
                     <hr>
 
@@ -264,14 +206,12 @@ async function loadSingleImage() {
                         <option value="5">5</option>
                     </select>
 
-                    <button onclick="addRating('${image.id}')">
-                        Rate
-                    </button>
+                    <button onclick="addRating('${image.id}')">Rate</button>
 
-                    <p>
-                        <strong>Average Rating:</strong>
-                        ${calculateAverage(image.ratings)}
-                    </p>
+                    <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
+                    <p><strong>Likes:</strong> ${image.likes || 0}</p>
+
+                    <button onclick="likeImage('${image.id}')">❤️ Like</button>
                 </div>
             </div>
         `;
@@ -281,6 +221,92 @@ async function loadSingleImage() {
     }
 }
 
+
+// =====================================================
+// COMMENTS, RATINGS, LIKES
+// =====================================================
+async function addComment(imageId) {
+    const input = document.getElementById(`comment-${imageId}`);
+    const commentText = input.value;
+
+    if (!commentText) return;
+
+    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
+
+    const comment = {
+        name: consumerName,
+        text: commentText
+    };
+
+    await fetch(`${API_URL}/api/images/${imageId}/comment`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ comment })
+    });
+
+    refreshCurrentPage();
+}
+
+async function addRating(imageId) {
+    const ratingValue = document.getElementById(`rating-${imageId}`).value;
+    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
+
+    const rating = {
+        name: consumerName,
+        value: Number(ratingValue)
+    };
+
+    await fetch(`${API_URL}/api/images/${imageId}/rating`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ rating })
+    });
+
+    refreshCurrentPage();
+}
+
+async function likeImage(imageId) {
+    await fetch(`${API_URL}/api/images/${imageId}/like`, {
+        method: "POST"
+    });
+
+    refreshCurrentPage();
+}
+
+function calculateAverage(ratings) {
+    if (!ratings || ratings.length === 0) {
+        return "No ratings";
+    }
+
+    const values = ratings.map(r => {
+        if (typeof r === "object") {
+            return Number(r.value);
+        }
+
+        return Number(r);
+    });
+
+    const sum = values.reduce((a, b) => a + b, 0);
+
+    return (sum / values.length).toFixed(1);
+}
+
+function refreshCurrentPage() {
+    if (window.location.pathname.includes("image.html")) {
+        loadSingleImage();
+    } else {
+        loadImages();
+    }
+}
+
+
+// =====================================================
+// CREATOR DASHBOARD
+// =====================================================
 async function loadCreatorImages() {
     const gallery = document.getElementById("creatorGallery");
     gallery.innerHTML = "<p>Loading uploaded images...</p>";
@@ -302,15 +328,21 @@ async function loadCreatorImages() {
 
             card.innerHTML = `
                 <img src="${image.imageUrl}" alt="${image.title}">
+                
                 <div class="card-content">
                     <h3>${image.title || "Untitled"}</h3>
                     <p>${image.caption || ""}</p>
+
                     <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
                     <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
+                    <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
+
                     <p><strong>Comments:</strong> ${(image.comments || []).length}</p>
                     <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
-                    <button onclick="deleteImage('${image.id}')">Delete</button>
+                    <p><strong>Likes:</strong> ${image.likes || 0}</p>
+
                     <button onclick="editImage('${image.id}')">Edit</button>
+                    <button onclick="deleteImage('${image.id}')">Delete</button>
                 </div>
             `;
 
@@ -326,9 +358,7 @@ async function loadCreatorImages() {
 async function deleteImage(imageId) {
     const confirmDelete = confirm("Are you sure you want to delete this image?");
 
-    if (!confirmDelete) {
-        return;
-    }
+    if (!confirmDelete) return;
 
     try {
         const response = await fetch(`${API_URL}/api/images/${imageId}`, {
@@ -351,6 +381,10 @@ function editImage(imageId) {
     window.location.href = `edit-image.html?id=${imageId}`;
 }
 
+
+// =====================================================
+// EDIT IMAGE METADATA
+// =====================================================
 async function loadEditForm() {
     const params = new URLSearchParams(window.location.search);
     const imageId = params.get("id");
@@ -391,62 +425,279 @@ async function loadEditForm() {
     });
 }
 
+
+// =====================================================
+// CONSUMER REGISTER / VERIFY / LOGIN / LOGOUT
+// =====================================================
 const consumerRegisterForm = document.getElementById("consumerRegisterForm");
 
 if (consumerRegisterForm) {
-    consumerRegisterForm.addEventListener("submit", function(e) {
+    consumerRegisterForm.addEventListener("submit", async function(e) {
         e.preventDefault();
 
         const name = document.getElementById("registerName").value;
         const email = document.getElementById("registerEmail").value;
         const password = document.getElementById("registerPassword").value;
 
-        const consumers = JSON.parse(localStorage.getItem("consumers")) || [];
+        const message = document.getElementById("registerMessage");
+        message.innerText = "Registering and sending verification code...";
 
-        const existingConsumer = consumers.find(user => user.email === email);
+        try {
+            const response = await fetch(`${API_URL}/api/consumer/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, email, password })
+            });
 
-        if (existingConsumer) {
-            document.getElementById("registerMessage").innerText = "This email is already registered.";
-            return;
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem("pendingVerifyEmail", email);
+                message.innerText = result.message;
+                window.location.href = "verify-consumer.html";
+            } else {
+                message.innerText = result.error || "Registration failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
         }
+    });
+}
 
-        consumers.push({
-            name: name,
-            email: email,
-            password: password
-        });
+const verifyConsumerForm = document.getElementById("verifyConsumerForm");
 
-        localStorage.setItem("consumers", JSON.stringify(consumers));
+if (verifyConsumerForm) {
+    const savedEmail = localStorage.getItem("pendingVerifyEmail");
 
-        document.getElementById("registerMessage").innerText = "Registration successful! You can now login.";
+    if (savedEmail) {
+        document.getElementById("verifyEmail").value = savedEmail;
+    }
 
-        consumerRegisterForm.reset();
+    verifyConsumerForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("verifyEmail").value;
+        const code = document.getElementById("verifyCode").value;
+
+        const message = document.getElementById("verifyMessage");
+        message.innerText = "Verifying...";
+
+        try {
+            const response = await fetch(`${API_URL}/api/consumer/verify`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, code })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.removeItem("pendingVerifyEmail");
+                message.innerText = "Email verified successfully. You can now login.";
+                setTimeout(() => {
+                    window.location.href = "consumer-login.html";
+                }, 1000);
+            } else {
+                message.innerText = result.error || "Verification failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
+        }
     });
 }
 
 const consumerLoginForm = document.getElementById("consumerLoginForm");
 
 if (consumerLoginForm) {
-    consumerLoginForm.addEventListener("submit", function(e) {
+    consumerLoginForm.addEventListener("submit", async function(e) {
         e.preventDefault();
 
         const email = document.getElementById("consumerEmail").value;
         const password = document.getElementById("consumerPassword").value;
 
-        const consumers = JSON.parse(localStorage.getItem("consumers")) || [];
+        const message = document.getElementById("consumerLoginMessage");
+        message.innerText = "Logging in...";
 
-        const matchedConsumer = consumers.find(
-            user => user.email === email && user.password === password
-        );
+        try {
+            const response = await fetch(`${API_URL}/api/consumer/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password })
+            });
 
-        if (matchedConsumer) {
-            localStorage.setItem("role", "consumer");
-            localStorage.setItem("consumerName", matchedConsumer.name);
-            localStorage.setItem("consumerEmail", matchedConsumer.email);
+            const result = await response.json();
 
-            window.location.href = "consumer.html";
-        } else {
-            document.getElementById("consumerLoginMessage").innerText = "Invalid email or password.";
+            if (response.ok) {
+                localStorage.setItem("role", result.role);
+                localStorage.setItem("consumerName", result.name);
+                localStorage.setItem("consumerEmail", result.email);
+
+                window.location.href = "consumer.html";
+            } else {
+                message.innerText = result.error || "Login failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
         }
     });
+}
+
+function showLoggedInUser() {
+    const userBox = document.getElementById("loggedInUser");
+
+    if (userBox) {
+        const name = localStorage.getItem("consumerName");
+        userBox.innerText = name ? `Logged in as: ${name}` : "Logged in as: Consumer";
+    }
+}
+
+function logoutConsumer() {
+    localStorage.removeItem("role");
+    localStorage.removeItem("consumerName");
+    localStorage.removeItem("consumerEmail");
+
+    window.location.href = "index.html";
+}
+
+
+// =====================================================
+// CREATOR REGISTER / VERIFY / LOGIN
+// =====================================================
+const creatorRegisterForm = document.getElementById("creatorRegisterForm");
+
+if (creatorRegisterForm) {
+    creatorRegisterForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById("creatorRegisterName").value;
+        const email = document.getElementById("creatorRegisterEmail").value;
+        const password = document.getElementById("creatorRegisterPassword").value;
+
+        const message = document.getElementById("creatorRegisterMessage");
+        message.innerText = "Registering creator and sending verification code...";
+
+        try {
+            const response = await fetch(`${API_URL}/api/creator/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, email, password })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem("pendingCreatorVerifyEmail", email);
+                window.location.href = "verify-creator.html";
+            } else {
+                message.innerText = result.error || "Creator registration failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
+        }
+    });
+}
+
+const verifyCreatorForm = document.getElementById("verifyCreatorForm");
+
+if (verifyCreatorForm) {
+    const savedEmail = localStorage.getItem("pendingCreatorVerifyEmail");
+
+    if (savedEmail) {
+        document.getElementById("verifyCreatorEmail").value = savedEmail;
+    }
+
+    verifyCreatorForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("verifyCreatorEmail").value;
+        const code = document.getElementById("verifyCreatorCode").value;
+
+        const message = document.getElementById("verifyCreatorMessage");
+        message.innerText = "Verifying creator email...";
+
+        try {
+            const response = await fetch(`${API_URL}/api/creator/verify`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, code })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.removeItem("pendingCreatorVerifyEmail");
+                message.innerText = "Creator verified successfully. You can now login.";
+
+                setTimeout(() => {
+                    window.location.href = "creator-login.html";
+                }, 1000);
+            } else {
+                message.innerText = result.error || "Creator verification failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
+        }
+    });
+}
+
+const creatorLoginForm = document.getElementById("creatorLoginForm");
+
+if (creatorLoginForm) {
+    creatorLoginForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("creatorEmail").value;
+        const password = document.getElementById("creatorPassword").value;
+
+        const message = document.getElementById("loginMessage");
+        message.innerText = "Logging in...";
+
+        try {
+            const response = await fetch(`${API_URL}/api/creator/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem("role", result.role);
+                localStorage.setItem("creatorName", result.name);
+                localStorage.setItem("creatorEmail", result.email);
+
+                window.location.href = "creator.html";
+            } else {
+                message.innerText = result.error || "Creator login failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
+        }
+    });
+}
+
+function logoutCreator() {
+    localStorage.removeItem("role");
+    localStorage.removeItem("creatorName");
+    localStorage.removeItem("creatorEmail");
+
+    window.location.href = "index.html";
 }

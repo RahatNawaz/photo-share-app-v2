@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Consumer Email</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <a href="consumer-login.html">← Back to Login</a>
+    <h1>Verify Email</h1>
+
+    <p>Enter the verification code sent to your email.</p>
+
+    <form id="verifyConsumerForm">
+        <input type="email" id="verifyEmail" placeholder="Email" required>
+        <input type="text" id="verifyCode" placeholder="Verification Code" required>
+        <button type="submit">Verify</button>
+    </form>
+
+    <p id="verifyMessage"></p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

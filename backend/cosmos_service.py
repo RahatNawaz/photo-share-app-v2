@@ -28,13 +28,17 @@ def get_all_images():
 
 def search_images(keyword):
     query = """
-    SELECT * FROM c 
+    SELECT * FROM c
     WHERE CONTAINS(LOWER(c.title), LOWER(@keyword))
     OR CONTAINS(LOWER(c.caption), LOWER(@keyword))
     OR CONTAINS(LOWER(c.location), LOWER(@keyword))
+    OR CONTAINS(LOWER(c.people), LOWER(@keyword))
+    OR ARRAY_CONTAINS(c.tags, @keyword)
     """
 
-    parameters = [{"name": "@keyword", "value": keyword}]
+    parameters = [
+        {"name": "@keyword", "value": keyword.lower()}
+    ]
 
     return list(container.query_items(
         query=query,
