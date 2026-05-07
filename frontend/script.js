@@ -106,7 +106,7 @@ function displayImages(images) {
 
                 <div>
                     ${(image.comments || [])
-                        .map(c => `<p>• ${c}</p>`)
+                        .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                         .join("")}
                 </div>
 
@@ -150,12 +150,17 @@ function displayImages(images) {
 }
 
 async function addComment(imageId) {
-
     const input = document.getElementById(`comment-${imageId}`);
+    const commentText = input.value;
 
-    const comment = input.value;
+    if (!commentText) return;
 
-    if (!comment) return;
+    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
+
+    const comment = {
+        name: consumerName,
+        text: commentText
+    };
 
     await fetch(`${API_URL}/api/images/${imageId}/comment`, {
         method: "POST",
@@ -233,7 +238,7 @@ async function loadSingleImage() {
                     <h3>Comments</h3>
                     <div>
                         ${(image.comments || [])
-                            .map(c => `<p>• ${c}</p>`)
+                            .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                             .join("")}
                     </div>
 
@@ -305,6 +310,7 @@ async function loadCreatorImages() {
                     <p><strong>Comments:</strong> ${(image.comments || []).length}</p>
                     <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
                     <button onclick="deleteImage('${image.id}')">Delete</button>
+                    <button onclick="editImage('${image.id}')">Edit</button>
                 </div>
             `;
 
@@ -339,4 +345,108 @@ async function deleteImage(imageId) {
         console.error(error);
         alert("Could not connect to backend.");
     }
+}
+
+function editImage(imageId) {
+    window.location.href = `edit-image.html?id=${imageId}`;
+}
+
+async function loadEditForm() {
+    const params = new URLSearchParams(window.location.search);
+    const imageId = params.get("id");
+
+    const response = await fetch(`${API_URL}/api/images/${imageId}`);
+    const image = await response.json();
+
+    document.getElementById("editTitle").value = image.title || "";
+    document.getElementById("editCaption").value = image.caption || "";
+    document.getElementById("editLocation").value = image.location || "";
+    document.getElementById("editPeople").value = image.people || "";
+
+    const form = document.getElementById("editImageForm");
+
+    form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const updatedData = {
+            title: document.getElementById("editTitle").value,
+            caption: document.getElementById("editCaption").value,
+            location: document.getElementById("editLocation").value,
+            people: document.getElementById("editPeople").value
+        };
+
+        const updateResponse = await fetch(`${API_URL}/api/images/${imageId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        if (updateResponse.ok) {
+            document.getElementById("editMessage").innerText = "Metadata updated successfully!";
+        } else {
+            document.getElementById("editMessage").innerText = "Update failed.";
+        }
+    });
+}
+
+const consumerRegisterForm = document.getElementById("consumerRegisterForm");
+
+if (consumerRegisterForm) {
+    consumerRegisterForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById("registerName").value;
+        const email = document.getElementById("registerEmail").value;
+        const password = document.getElementById("registerPassword").value;
+
+        const consumers = JSON.parse(localStorage.getItem("consumers")) || [];
+
+        const existingConsumer = consumers.find(user => user.email === email);
+
+        if (existingConsumer) {
+            document.getElementById("registerMessage").innerText = "This email is already registered.";
+            return;
+        }
+
+        consumers.push({
+            name: name,
+            email: email,
+            password: password
+        });
+
+        localStorage.setItem("consumers", JSON.stringify(consumers));
+
+        document.getElementById("registerMessage").innerText = "Registration successful! You can now login.";
+
+        consumerRegisterForm.reset();
+    });
+}
+
+const consumerLoginForm = document.getElementById("consumerLoginForm");
+
+if (consumerLoginForm) {
+    consumerLoginForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("consumerEmail").value;
+        const password = document.getElementById("consumerPassword").value;
+
+        const consumers = JSON.parse(localStorage.getItem("consumers")) || [];
+
+        const matchedConsumer = consumers.find(
+            user => user.email === email && user.password === password
+        );
+
+        if (matchedConsumer) {
+            localStorage.setItem("role", "consumer");
+            localStorage.setItem("consumerName", matchedConsumer.name);
+            localStorage.setItem("consumerEmail", matchedConsumer.email);
+
+            window.location.href = "consumer.html";
+        } else {
+            document.getElementById("consumerLoginMessage").innerText = "Invalid email or password.";
+        }
+    });
 }

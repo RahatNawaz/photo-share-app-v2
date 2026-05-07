@@ -19,6 +19,12 @@
     <div id="gallery" class="gallery"></div>
 </div>
 
+<script>
+if (localStorage.getItem("role") !== "consumer") {
+    window.location.href = "consumer-login.html";
+}
+</script>
+
 <script src="script.js"></script>
 <script>
     loadImages();

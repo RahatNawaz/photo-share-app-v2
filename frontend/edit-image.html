@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Image</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <a href="creator-dashboard.html">← Back to Dashboard</a>
+
+    <h1>Edit Image Metadata</h1>
+
+    <form id="editImageForm">
+        <input type="text" id="editTitle" placeholder="Title" required>
+        <textarea id="editCaption" placeholder="Caption" required></textarea>
+        <input type="text" id="editLocation" placeholder="Location">
+        <input type="text" id="editPeople" placeholder="People present">
+
+        <button type="submit">Update Metadata</button>
+    </form>
+
+    <p id="editMessage"></p>
+</div>
+
+<script>
+if (localStorage.getItem("role") !== "creator") {
+    window.location.href = "creator-login.html";
+}
+</script>
+
+<script src="script.js"></script>
+<script>
+    loadEditForm();
+</script>
+
+</body>
+</html>
