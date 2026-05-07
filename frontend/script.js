@@ -385,3 +385,63 @@ async function loadEditForm() {
         }
     });
 }
+
+const consumerRegisterForm = document.getElementById("consumerRegisterForm");
+
+if (consumerRegisterForm) {
+    consumerRegisterForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById("registerName").value;
+        const email = document.getElementById("registerEmail").value;
+        const password = document.getElementById("registerPassword").value;
+
+        const consumers = JSON.parse(localStorage.getItem("consumers")) || [];
+
+        const existingConsumer = consumers.find(user => user.email === email);
+
+        if (existingConsumer) {
+            document.getElementById("registerMessage").innerText = "This email is already registered.";
+            return;
+        }
+
+        consumers.push({
+            name: name,
+            email: email,
+            password: password
+        });
+
+        localStorage.setItem("consumers", JSON.stringify(consumers));
+
+        document.getElementById("registerMessage").innerText = "Registration successful! You can now login.";
+
+        consumerRegisterForm.reset();
+    });
+}
+
+const consumerLoginForm = document.getElementById("consumerLoginForm");
+
+if (consumerLoginForm) {
+    consumerLoginForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("consumerEmail").value;
+        const password = document.getElementById("consumerPassword").value;
+
+        const consumers = JSON.parse(localStorage.getItem("consumers")) || [];
+
+        const matchedConsumer = consumers.find(
+            user => user.email === email && user.password === password
+        );
+
+        if (matchedConsumer) {
+            localStorage.setItem("role", "consumer");
+            localStorage.setItem("consumerName", matchedConsumer.name);
+            localStorage.setItem("consumerEmail", matchedConsumer.email);
+
+            window.location.href = "consumer.html";
+        } else {
+            document.getElementById("consumerLoginMessage").innerText = "Invalid email or password.";
+        }
+    });
+}
