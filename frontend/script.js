@@ -1,5 +1,12 @@
+// =====================================================
+// CONFIG
+// =====================================================
 const API_URL = "http://127.0.0.1:5000";
 
+
+// =====================================================
+// CREATOR IMAGE UPLOAD
+// =====================================================
 const uploadForm = document.getElementById("uploadForm");
 
 if (uploadForm) {
@@ -38,6 +45,10 @@ if (uploadForm) {
     });
 }
 
+
+// =====================================================
+// CONSUMER GALLERY
+// =====================================================
 async function loadImages() {
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "<p>Loading images...</p>";
@@ -89,36 +100,26 @@ function displayImages(images) {
             
             <div class="card-content">
                 <h3>${image.title || "Untitled"}</h3>
-
                 <p>${image.caption || ""}</p>
 
-                <p class="meta">
-                    <strong>Location:</strong> ${image.location || "N/A"}
-                </p>
+                <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
+                <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
 
                 <p class="meta">
-                    <strong>People:</strong> ${image.people || "N/A"}
+                    <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
                 </p>
 
                 <hr>
 
                 <h4>Comments</h4>
-
                 <div>
                     ${(image.comments || [])
                         .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                         .join("")}
                 </div>
 
-                <input 
-                    type="text" 
-                    id="comment-${image.id}" 
-                    placeholder="Add comment"
-                >
-
-                <button onclick="addComment('${image.id}')">
-                    Comment
-                </button>
+                <input type="text" id="comment-${image.id}" placeholder="Add comment">
+                <button onclick="addComment('${image.id}')">Comment</button>
 
                 <hr>
 
@@ -132,24 +133,12 @@ function displayImages(images) {
                     <option value="5">5</option>
                 </select>
 
-                <button onclick="addRating('${image.id}')">
-                    Rate
-                </button>
+                <button onclick="addRating('${image.id}')">Rate</button>
 
-                <p>
-                    <strong>Average Rating:</strong>
-                    ${calculateAverage(image.ratings)}
-                </p>
-
+                <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
                 <p><strong>Likes:</strong> ${image.likes || 0}</p>
 
-                <button onclick="likeImage('${image.id}')">
-                    ❤️ Like
-                </button>
-
-                <p class="meta">
-                <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
-                </p>
+                <button onclick="likeImage('${image.id}')">❤️ Like</button>
 
                 <a class="btn" href="image.html?id=${image.id}">View Details</a>
             </div>
@@ -159,75 +148,10 @@ function displayImages(images) {
     });
 }
 
-async function addComment(imageId) {
-    const input = document.getElementById(`comment-${imageId}`);
-    const commentText = input.value;
 
-    if (!commentText) return;
-
-    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
-
-    const comment = {
-        name: consumerName,
-        text: commentText
-    };
-
-    await fetch(`${API_URL}/api/images/${imageId}/comment`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ comment })
-    });
-
-    if (window.location.pathname.includes("image.html")) {
-        loadSingleImage();
-    } else {
-        loadImages();
-    }
-}
-
-async function addRating(imageId) {
-    const ratingValue = document.getElementById(`rating-${imageId}`).value;
-    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
-
-    const rating = {
-        name: consumerName,
-        value: Number(ratingValue)
-    };
-
-    await fetch(`${API_URL}/api/images/${imageId}/rating`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ rating })
-    });
-
-    if (window.location.pathname.includes("image.html")) {
-        loadSingleImage();
-    } else {
-        loadImages();
-    }
-}
-
-function calculateAverage(ratings) {
-    if (!ratings || ratings.length === 0) {
-        return "No ratings";
-    }
-
-    const values = ratings.map(r => {
-        if (typeof r === "object") {
-            return Number(r.value);
-        }
-        return Number(r);
-    });
-
-    const sum = values.reduce((a, b) => a + b, 0);
-
-    return (sum / values.length).toFixed(1);
-}
-
+// =====================================================
+// IMAGE DETAILS PAGE
+// =====================================================
 async function loadSingleImage() {
     const params = new URLSearchParams(window.location.search);
     const imageId = params.get("id");
@@ -254,6 +178,10 @@ async function loadSingleImage() {
                     <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
                     <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
 
+                    <p class="meta">
+                        <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
+                    </p>
+
                     <hr>
 
                     <h3>Comments</h3>
@@ -263,15 +191,8 @@ async function loadSingleImage() {
                             .join("")}
                     </div>
 
-                    <input 
-                        type="text" 
-                        id="comment-${image.id}" 
-                        placeholder="Add comment"
-                    >
-
-                    <button onclick="addComment('${image.id}')">
-                        Comment
-                    </button>
+                    <input type="text" id="comment-${image.id}" placeholder="Add comment">
+                    <button onclick="addComment('${image.id}')">Comment</button>
 
                     <hr>
 
@@ -285,24 +206,12 @@ async function loadSingleImage() {
                         <option value="5">5</option>
                     </select>
 
-                    <button onclick="addRating('${image.id}')">
-                        Rate
-                    </button>
+                    <button onclick="addRating('${image.id}')">Rate</button>
 
-                    <p>
-                        <strong>Average Rating:</strong>
-                        ${calculateAverage(image.ratings)}
-                    </p>
-
+                    <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
                     <p><strong>Likes:</strong> ${image.likes || 0}</p>
 
-                    <button onclick="likeImage('${image.id}')">
-                        ❤️ Like
-                    </button>
-
-                    <p class="meta">
-                    <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
-                    </p>
+                    <button onclick="likeImage('${image.id}')">❤️ Like</button>
                 </div>
             </div>
         `;
@@ -312,6 +221,92 @@ async function loadSingleImage() {
     }
 }
 
+
+// =====================================================
+// COMMENTS, RATINGS, LIKES
+// =====================================================
+async function addComment(imageId) {
+    const input = document.getElementById(`comment-${imageId}`);
+    const commentText = input.value;
+
+    if (!commentText) return;
+
+    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
+
+    const comment = {
+        name: consumerName,
+        text: commentText
+    };
+
+    await fetch(`${API_URL}/api/images/${imageId}/comment`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ comment })
+    });
+
+    refreshCurrentPage();
+}
+
+async function addRating(imageId) {
+    const ratingValue = document.getElementById(`rating-${imageId}`).value;
+    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
+
+    const rating = {
+        name: consumerName,
+        value: Number(ratingValue)
+    };
+
+    await fetch(`${API_URL}/api/images/${imageId}/rating`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ rating })
+    });
+
+    refreshCurrentPage();
+}
+
+async function likeImage(imageId) {
+    await fetch(`${API_URL}/api/images/${imageId}/like`, {
+        method: "POST"
+    });
+
+    refreshCurrentPage();
+}
+
+function calculateAverage(ratings) {
+    if (!ratings || ratings.length === 0) {
+        return "No ratings";
+    }
+
+    const values = ratings.map(r => {
+        if (typeof r === "object") {
+            return Number(r.value);
+        }
+
+        return Number(r);
+    });
+
+    const sum = values.reduce((a, b) => a + b, 0);
+
+    return (sum / values.length).toFixed(1);
+}
+
+function refreshCurrentPage() {
+    if (window.location.pathname.includes("image.html")) {
+        loadSingleImage();
+    } else {
+        loadImages();
+    }
+}
+
+
+// =====================================================
+// CREATOR DASHBOARD
+// =====================================================
 async function loadCreatorImages() {
     const gallery = document.getElementById("creatorGallery");
     gallery.innerHTML = "<p>Loading uploaded images...</p>";
@@ -333,15 +328,21 @@ async function loadCreatorImages() {
 
             card.innerHTML = `
                 <img src="${image.imageUrl}" alt="${image.title}">
+                
                 <div class="card-content">
                     <h3>${image.title || "Untitled"}</h3>
                     <p>${image.caption || ""}</p>
+
                     <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
                     <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
+                    <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
+
                     <p><strong>Comments:</strong> ${(image.comments || []).length}</p>
                     <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
-                    <button onclick="deleteImage('${image.id}')">Delete</button>
+                    <p><strong>Likes:</strong> ${image.likes || 0}</p>
+
                     <button onclick="editImage('${image.id}')">Edit</button>
+                    <button onclick="deleteImage('${image.id}')">Delete</button>
                 </div>
             `;
 
@@ -357,9 +358,7 @@ async function loadCreatorImages() {
 async function deleteImage(imageId) {
     const confirmDelete = confirm("Are you sure you want to delete this image?");
 
-    if (!confirmDelete) {
-        return;
-    }
+    if (!confirmDelete) return;
 
     try {
         const response = await fetch(`${API_URL}/api/images/${imageId}`, {
@@ -382,6 +381,10 @@ function editImage(imageId) {
     window.location.href = `edit-image.html?id=${imageId}`;
 }
 
+
+// =====================================================
+// EDIT IMAGE METADATA
+// =====================================================
 async function loadEditForm() {
     const params = new URLSearchParams(window.location.search);
     const imageId = params.get("id");
@@ -422,6 +425,10 @@ async function loadEditForm() {
     });
 }
 
+
+// =====================================================
+// CONSUMER REGISTER / LOGIN / LOGOUT
+// =====================================================
 const consumerRegisterForm = document.getElementById("consumerRegisterForm");
 
 if (consumerRegisterForm) {
@@ -433,7 +440,6 @@ if (consumerRegisterForm) {
         const password = document.getElementById("registerPassword").value;
 
         const consumers = JSON.parse(localStorage.getItem("consumers")) || [];
-
         const existingConsumer = consumers.find(user => user.email === email);
 
         if (existingConsumer) {
@@ -442,14 +448,15 @@ if (consumerRegisterForm) {
         }
 
         consumers.push({
-            name: name,
-            email: email,
-            password: password
+            name,
+            email,
+            password
         });
 
         localStorage.setItem("consumers", JSON.stringify(consumers));
 
-        document.getElementById("registerMessage").innerText = "Registration successful! You can now login.";
+        document.getElementById("registerMessage").innerText =
+            "Registration successful! You can now login.";
 
         consumerRegisterForm.reset();
     });
@@ -477,7 +484,8 @@ if (consumerLoginForm) {
 
             window.location.href = "consumer.html";
         } else {
-            document.getElementById("consumerLoginMessage").innerText = "Invalid email or password.";
+            document.getElementById("consumerLoginMessage").innerText =
+                "Invalid email or password.";
         }
     });
 }
@@ -487,12 +495,7 @@ function showLoggedInUser() {
 
     if (userBox) {
         const name = localStorage.getItem("consumerName");
-
-        if (name) {
-            userBox.innerText = `Logged in as: ${name}`;
-        } else {
-            userBox.innerText = "Logged in as: Consumer";
-        }
+        userBox.innerText = name ? `Logged in as: ${name}` : "Logged in as: Consumer";
     }
 }
 
@@ -502,17 +505,4 @@ function logoutConsumer() {
     localStorage.removeItem("consumerEmail");
 
     window.location.href = "index.html";
-}
-
-async function likeImage(imageId) {
-
-    await fetch(`${API_URL}/api/images/${imageId}/like`, {
-        method: "POST"
-    });
-
-    if (window.location.pathname.includes("image.html")) {
-        loadSingleImage();
-    } else {
-        loadImages();
-    }
 }
