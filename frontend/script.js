@@ -265,7 +265,10 @@ async function addRating(imageId) {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ rating })
+        body: JSON.stringify({
+            rating: rating,
+            consumerEmail: localStorage.getItem("consumerEmail")
+        })
     });
 
     refreshCurrentPage();
@@ -273,7 +276,13 @@ async function addRating(imageId) {
 
 async function likeImage(imageId) {
     await fetch(`${API_URL}/api/images/${imageId}/like`, {
-        method: "POST"
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            consumerEmail: localStorage.getItem("consumerEmail")
+        })
     });
 
     refreshCurrentPage();
@@ -286,7 +295,11 @@ function calculateAverage(ratings) {
 
     const values = ratings.map(r => {
         if (typeof r === "object") {
-            return Number(r.value);
+            if (typeof r.rating === "object") {
+                return Number(r.rating.value);
+            }
+
+            return Number(r.rating || r.value);
         }
 
         return Number(r);

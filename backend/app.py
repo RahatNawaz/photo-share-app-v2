@@ -110,13 +110,28 @@ def add_comment(image_id):
 def add_rating(image_id):
     data = request.json
     rating = data.get("rating")
+    consumer_email = data.get("consumerEmail")
+
+    if not consumer_email:
+        return jsonify({"error": "Consumer email is required"}), 400
 
     item = container.read_item(item=image_id, partition_key=image_id)
+
+    if "ratedBy" not in item:
+        item["ratedBy"] = []
+
+    if consumer_email in item["ratedBy"]:
+        return jsonify({"error": "You have already rated this image"}), 400
 
     if "ratings" not in item:
         item["ratings"] = []
 
-    item["ratings"].append(rating)
+    item["ratings"].append({
+        "email": consumer_email,
+        "rating": rating
+    })
+
+    item["ratedBy"].append(consumer_email)
 
     container.replace_item(item=image_id, body=item)
 
@@ -152,13 +167,22 @@ def update_image(image_id):
 
 @app.route("/api/images/<image_id>/like", methods=["POST"])
 def like_image(image_id):
+    data = request.json
+    consumer_email = data.get("consumerEmail")
+
+    if not consumer_email:
+        return jsonify({"error": "Consumer email is required"}), 400
 
     item = container.read_item(item=image_id, partition_key=image_id)
 
-    if "likes" not in item:
-        item["likes"] = 0
+    if "likedBy" not in item:
+        item["likedBy"] = []
 
-    item["likes"] += 1
+    if consumer_email in item["likedBy"]:
+        return jsonify({"error": "You have already liked this image"}), 400
+
+    item["likedBy"].append(consumer_email)
+    item["likes"] = len(item["likedBy"])
 
     container.replace_item(item=image_id, body=item)
 
