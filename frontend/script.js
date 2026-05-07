@@ -427,65 +427,126 @@ async function loadEditForm() {
 
 
 // =====================================================
-// CONSUMER REGISTER / LOGIN / LOGOUT
+// CONSUMER REGISTER / VERIFY / LOGIN / LOGOUT
 // =====================================================
 const consumerRegisterForm = document.getElementById("consumerRegisterForm");
 
 if (consumerRegisterForm) {
-    consumerRegisterForm.addEventListener("submit", function(e) {
+    consumerRegisterForm.addEventListener("submit", async function(e) {
         e.preventDefault();
 
         const name = document.getElementById("registerName").value;
         const email = document.getElementById("registerEmail").value;
         const password = document.getElementById("registerPassword").value;
 
-        const consumers = JSON.parse(localStorage.getItem("consumers")) || [];
-        const existingConsumer = consumers.find(user => user.email === email);
+        const message = document.getElementById("registerMessage");
+        message.innerText = "Registering and sending verification code...";
 
-        if (existingConsumer) {
-            document.getElementById("registerMessage").innerText = "This email is already registered.";
-            return;
+        try {
+            const response = await fetch(`${API_URL}/api/consumer/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, email, password })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem("pendingVerifyEmail", email);
+                message.innerText = result.message;
+                window.location.href = "verify-consumer.html";
+            } else {
+                message.innerText = result.error || "Registration failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
         }
+    });
+}
 
-        consumers.push({
-            name,
-            email,
-            password
-        });
+const verifyConsumerForm = document.getElementById("verifyConsumerForm");
 
-        localStorage.setItem("consumers", JSON.stringify(consumers));
+if (verifyConsumerForm) {
+    const savedEmail = localStorage.getItem("pendingVerifyEmail");
 
-        document.getElementById("registerMessage").innerText =
-            "Registration successful! You can now login.";
+    if (savedEmail) {
+        document.getElementById("verifyEmail").value = savedEmail;
+    }
 
-        consumerRegisterForm.reset();
+    verifyConsumerForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("verifyEmail").value;
+        const code = document.getElementById("verifyCode").value;
+
+        const message = document.getElementById("verifyMessage");
+        message.innerText = "Verifying...";
+
+        try {
+            const response = await fetch(`${API_URL}/api/consumer/verify`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, code })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.removeItem("pendingVerifyEmail");
+                message.innerText = "Email verified successfully. You can now login.";
+                setTimeout(() => {
+                    window.location.href = "consumer-login.html";
+                }, 1000);
+            } else {
+                message.innerText = result.error || "Verification failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
+        }
     });
 }
 
 const consumerLoginForm = document.getElementById("consumerLoginForm");
 
 if (consumerLoginForm) {
-    consumerLoginForm.addEventListener("submit", function(e) {
+    consumerLoginForm.addEventListener("submit", async function(e) {
         e.preventDefault();
 
         const email = document.getElementById("consumerEmail").value;
         const password = document.getElementById("consumerPassword").value;
 
-        const consumers = JSON.parse(localStorage.getItem("consumers")) || [];
+        const message = document.getElementById("consumerLoginMessage");
+        message.innerText = "Logging in...";
 
-        const matchedConsumer = consumers.find(
-            user => user.email === email && user.password === password
-        );
+        try {
+            const response = await fetch(`${API_URL}/api/consumer/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password })
+            });
 
-        if (matchedConsumer) {
-            localStorage.setItem("role", "consumer");
-            localStorage.setItem("consumerName", matchedConsumer.name);
-            localStorage.setItem("consumerEmail", matchedConsumer.email);
+            const result = await response.json();
 
-            window.location.href = "consumer.html";
-        } else {
-            document.getElementById("consumerLoginMessage").innerText =
-                "Invalid email or password.";
+            if (response.ok) {
+                localStorage.setItem("role", result.role);
+                localStorage.setItem("consumerName", result.name);
+                localStorage.setItem("consumerEmail", result.email);
+
+                window.location.href = "consumer.html";
+            } else {
+                message.innerText = result.error || "Login failed.";
+            }
+        } catch (error) {
+            console.error(error);
+            message.innerText = "Could not connect to backend.";
         }
     });
 }
