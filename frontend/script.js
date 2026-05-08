@@ -101,50 +101,55 @@ function displayImages(images) {
             <div class="image-box">
                 <img src="${image.imageUrl}" alt="${image.title}">
             </div>
-            
+
             <div class="card-content">
                 <h3>${image.title || "Untitled"}</h3>
-                <p>${image.caption || ""}</p>
+                <p class="creator-text">From ${image.creatorEmail || "Unknown creator"}</p>
+
+                <div class="post-actions">
+                    <button class="like-btn" onclick="likeImage('${image.id}')">
+                        ${
+                            image.likedBy &&
+                            image.likedBy.includes(localStorage.getItem("consumerEmail"))
+                                ? "♥"
+                                : "♡"
+                        }
+                    </button>
+                    <span>${image.likes || 0} likes</span>
+                    <span class="divider"></span>
+                    <span class="rating-display">⭐ ${calculateAverage(image.ratings)}</span>
+                </div>
+
+                <div class="rating-box">
+                    <select id="rating-${image.id}">
+                        <option value="1">⭐ 1</option>
+                        <option value="2">⭐ 2</option>
+                        <option value="3">⭐ 3</option>
+                        <option value="4">⭐ 4</option>
+                        <option value="5">⭐ 5</option>
+                    </select>
+
+                    <button onclick="addRating('${image.id}')">Rate</button>
+                </div>
 
                 <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
                 <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
-
-                <p class="meta">
-                    <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
-                </p>
+                <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
 
                 <hr>
 
-                <h4>Comments</h4>
                 <div>
                     ${(image.comments || [])
-                        .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
+                        .map(c => `<p><strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                         .join("")}
                 </div>
 
-                <input type="text" id="comment-${image.id}" placeholder="Add comment">
-                <button onclick="addComment('${image.id}')">Comment</button>
+                <div class="comment-box">
+                    <input type="text" id="comment-${image.id}" placeholder="Add a comment...">
+                    <button onclick="addComment('${image.id}')">Post</button>
+                </div>
 
-                <hr>
-
-                <h4>Rate Image</h4>
-
-                <select id="rating-${image.id}">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-
-                <button onclick="addRating('${image.id}')">Rate</button>
-
-                <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
-                <p><strong>Likes:</strong> ${image.likes || 0}</p>
-
-                <button onclick="likeImage('${image.id}')">❤️ Like</button>
-
-                <a class="btn" href="image.html?id=${image.id}">View Details</a>
+                <a class="btn secondary details-btn" href="image.html?id=${image.id}">View Details</a>
             </div>
         `;
 
@@ -362,8 +367,10 @@ async function loadCreatorImages() {
                     <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
 
                     <p><strong>Comments:</strong> ${(image.comments || []).length}</p>
-                    <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
-                    <p><strong>Likes:</strong> ${image.likes || 0}</p>
+                    <div class="post-actions">
+                        <span>♡ ${image.likes || 0} likes</span>
+                        <span>⭐ ${calculateAverage(image.ratings)}</span>
+                    </div>
 
                     <button onclick="editImage('${image.id}')">Edit</button>
                     <button onclick="deleteImage('${image.id}')">Delete</button>
