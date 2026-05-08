@@ -7,7 +7,6 @@ on:
   workflow_dispatch:
 
 jobs:
-
   # =====================================================
   # BACKEND BUILD
   # =====================================================
@@ -39,7 +38,6 @@ jobs:
             .
             !antenv/
 
-
   # =====================================================
   # BACKEND DEPLOY
   # =====================================================
@@ -70,7 +68,6 @@ jobs:
           app-name: 'photo-share-api'
           slot-name: 'Production'
 
-
   # =====================================================
   # FRONTEND DEPLOY
   # =====================================================
@@ -92,35 +89,18 @@ jobs:
               --account-key "$AZURE_STORAGE_KEY" \
               --destination '$web' \
               --source frontend \
-              --overwrite true \
-              --pattern "*.html"
+              --overwrite true
 
-            az storage blob upload-batch \
+            az storage blob update \
               --account-name photostorageacctt \
               --account-key "$AZURE_STORAGE_KEY" \
-              --destination '$web' \
-              --source frontend \
-              --overwrite true \
-              --pattern "*.css"
-
-            az storage blob upload-batch \
-              --account-name photostorageacctt \
-              --account-key "$AZURE_STORAGE_KEY" \
-              --destination '$web' \
-              --source frontend \
-              --overwrite true \
-              --pattern "*.js"
-
-              az storage blob update \
-              --account-name photostorageacctt \
-              --account-key "$AZURE_STORAGE_KEY" \
-              --container-name '$web' \ frontend \
+              --container-name '$web' \
               --name style.css \
               --content-cache-control "no-cache"
 
             az storage blob update \
               --account-name photostorageacctt \
               --account-key "$AZURE_STORAGE_KEY" \
-              --container-name '$web' \ frontend \
+              --container-name '$web' \
               --name script.js \
               --content-cache-control "no-cache"
