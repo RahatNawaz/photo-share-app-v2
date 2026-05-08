@@ -32,6 +32,8 @@ def home():
 @app.route("/api/upload", methods=["POST"])
 def upload():
     image = request.files.get("image")
+    creator_email = request.form.get("creatorEmail", "")
+    creator_name = request.form.get("creatorName", "")
 
     if not image:
         return jsonify({"error": "No image uploaded"}), 400
@@ -60,13 +62,15 @@ def upload():
         auto_tags.append("people")
 
     metadata = {
-        "title": title,
-        "caption": caption,
-        "location": location,
-        "people": people,
-        "imageUrl": image_url,
-        "tags": auto_tags
-    }
+    "title": title,
+    "caption": caption,
+    "location": location,
+    "people": people,
+    "imageUrl": image_url,
+    "tags": auto_tags,
+    "creatorEmail": creator_email,
+    "creatorName": creator_name
+}
 
     saved_data = save_metadata(metadata)
 
@@ -106,17 +110,39 @@ def add_comment(image_id):
 def add_rating(image_id):
     data = request.json
     rating = data.get("rating")
+    consumer_email = data.get("consumerEmail")
+
+    if not consumer_email:
+        return jsonify({"error": "Consumer email is required"}), 400
 
     item = container.read_item(item=image_id, partition_key=image_id)
 
     if "ratings" not in item:
         item["ratings"] = []
 
-    item["ratings"].append(rating)
+    existing_rating = None
+
+    for r in item["ratings"]:
+        if r.get("email") == consumer_email:
+            existing_rating = r
+            break
+
+    if existing_rating:
+        existing_rating["rating"] = rating
+        message = "Rating updated"
+    else:
+        item["ratings"].append({
+            "email": consumer_email,
+            "rating": rating
+        })
+        message = "Rating added"
 
     container.replace_item(item=image_id, body=item)
 
-    return jsonify({"message": "Rating added"})
+    return jsonify({
+        "message": message,
+        "ratings": item["ratings"]
+    })
 
 @app.route("/api/images/<image_id>", methods=["GET"])
 def get_single_image(image_id):
@@ -148,19 +174,32 @@ def update_image(image_id):
 
 @app.route("/api/images/<image_id>/like", methods=["POST"])
 def like_image(image_id):
+    data = request.json
+    consumer_email = data.get("consumerEmail")
+
+    if not consumer_email:
+        return jsonify({"error": "Consumer email is required"}), 400
 
     item = container.read_item(item=image_id, partition_key=image_id)
 
-    if "likes" not in item:
-        item["likes"] = 0
+    if "likedBy" not in item:
+        item["likedBy"] = []
 
-    item["likes"] += 1
+    if consumer_email in item["likedBy"]:
+        item["likedBy"].remove(consumer_email)
+        message = "Image unliked"
+    else:
+        item["likedBy"].append(consumer_email)
+        message = "Image liked"
+
+    item["likes"] = len(item["likedBy"])
 
     container.replace_item(item=image_id, body=item)
 
     return jsonify({
-        "message": "Image liked",
-        "likes": item["likes"]
+        "message": message,
+        "likes": item["likes"],
+        "likedBy": item["likedBy"]
     })
 
 @app.route("/api/consumer/register", methods=["POST"])
@@ -360,6 +399,23 @@ def creator_login():
         "email": user["email"],
         "role": "creator"
     })
+
+@app.route("/api/creator/images", methods=["GET"])
+def creator_images():
+    creator_email = request.args.get("email", "")
+
+    if not creator_email:
+        return jsonify({"error": "Creator email is required"}), 400
+
+    data = list(container.query_items(
+        query="SELECT * FROM c WHERE c.creatorEmail = @creatorEmail",
+        parameters=[
+            {"name": "@creatorEmail", "value": creator_email}
+        ],
+        enable_cross_partition_query=True
+    ))
+
+    return jsonify(data)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

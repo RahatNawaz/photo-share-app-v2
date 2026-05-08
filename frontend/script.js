@@ -20,6 +20,8 @@ if (uploadForm) {
         formData.append("location", document.getElementById("location").value);
         formData.append("people", document.getElementById("people").value);
         formData.append("image", document.getElementById("image").files[0]);
+        formData.append("creatorEmail", localStorage.getItem("creatorEmail"));
+        formData.append("creatorName", localStorage.getItem("creatorName"));
 
         const message = document.getElementById("uploadMessage");
         message.innerText = "Uploading...";
@@ -95,52 +97,68 @@ function displayImages(images) {
         const card = document.createElement("div");
         card.className = "card";
 
+        const consumerEmail = localStorage.getItem("consumerEmail");
+
+        const myRating = image.ratings
+            ? image.ratings.find(r => r.email === consumerEmail)
+            : null;
+
+        const currentRating = myRating ? myRating.rating : "";
+
         card.innerHTML = `
-            <img src="${image.imageUrl}" alt="${image.title}">
-            
+            <div class="image-box">
+                <img src="${image.imageUrl}" alt="${image.title}">
+            </div>
+
             <div class="card-content">
                 <h3>${image.title || "Untitled"}</h3>
-                <p>${image.caption || ""}</p>
+                <p class="creator-text">From ${image.creatorEmail || "Unknown creator"}</p>
+
+                <div class="post-actions">
+                    <button class="like-btn" onclick="likeImage('${image.id}')">
+                        ${
+                            image.likedBy &&
+                            image.likedBy.includes(localStorage.getItem("consumerEmail"))
+                                ? "♥"
+                                : "♡"
+                        }
+                    </button>
+                    <span>${image.likes || 0} likes</span>
+                    <span class="divider"></span>
+                    <span class="rating-display">⭐ ${calculateAverage(image.ratings)}</span>
+                </div>
+
+                <div class="rating-box">
+                    <select id="rating-${image.id}">
+                        <option value="" ${currentRating === "" ? "selected" : ""}>Rate</option>
+                        <option value="1" ${currentRating == 1 ? "selected" : ""}>★ 1</option>
+                        <option value="2" ${currentRating == 2 ? "selected" : ""}>★ 2</option>
+                        <option value="3" ${currentRating == 3 ? "selected" : ""}>★ 3</option>
+                        <option value="4" ${currentRating == 4 ? "selected" : ""}>★ 4</option>
+                        <option value="5" ${currentRating == 5 ? "selected" : ""}>★ 5</option>
+                    </select>
+
+                    <button onclick="addRating('${image.id}')">Rate</button>
+                </div>
 
                 <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
                 <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
-
-                <p class="meta">
-                    <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
-                </p>
+                <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
 
                 <hr>
 
-                <h4>Comments</h4>
                 <div>
                     ${(image.comments || [])
-                        .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
+                        .map(c => `<p><strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                         .join("")}
                 </div>
 
-                <input type="text" id="comment-${image.id}" placeholder="Add comment">
-                <button onclick="addComment('${image.id}')">Comment</button>
+                <div class="comment-box">
+                    <input type="text" id="comment-${image.id}" placeholder="Add a comment...">
+                    <button onclick="addComment('${image.id}')">Post</button>
+                </div>
 
-                <hr>
-
-                <h4>Rate Image</h4>
-
-                <select id="rating-${image.id}">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-
-                <button onclick="addRating('${image.id}')">Rate</button>
-
-                <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
-                <p><strong>Likes:</strong> ${image.likes || 0}</p>
-
-                <button onclick="likeImage('${image.id}')">❤️ Like</button>
-
-                <a class="btn" href="image.html?id=${image.id}">View Details</a>
+                <a class="btn secondary details-btn" href="image.html?id=${image.id}">View Details</a>
             </div>
         `;
 
@@ -155,7 +173,6 @@ function displayImages(images) {
 async function loadSingleImage() {
     const params = new URLSearchParams(window.location.search);
     const imageId = params.get("id");
-
     const container = document.getElementById("imageDetails");
 
     if (!imageId) {
@@ -167,51 +184,71 @@ async function loadSingleImage() {
         const response = await fetch(`${API_URL}/api/images/${imageId}`);
         const image = await response.json();
 
+        const consumerEmail = localStorage.getItem("consumerEmail");
+
+        const isLiked =
+            image.likedBy &&
+            image.likedBy.includes(consumerEmail);
+
+        const myRating = image.ratings
+            ? image.ratings.find(r => r.email === consumerEmail)
+            : null;
+
+        const currentRating = myRating ? myRating.rating : "";
+
         container.innerHTML = `
-            <div class="card">
-                <img src="${image.imageUrl}" alt="${image.title}">
+            <div class="card single-card">
+                <div class="details-image-box">
+                    <img src="${image.imageUrl}" alt="${image.title}">
+                </div>
 
                 <div class="card-content">
                     <h1>${image.title || "Untitled"}</h1>
                     <p>${image.caption || ""}</p>
 
+                    <div class="post-actions">
+                        <button class="like-btn" onclick="likeImage('${image.id}')">
+                            ${isLiked ? "&#9829;" : "&#9825;"}
+                        </button>
+
+                        <span>${image.likes || 0} likes</span>
+                        <span class="divider"></span>
+                        <span class="rating-display">&#9733; ${calculateAverage(image.ratings)}</span>
+                    </div>
+
+                    <div class="rating-box">
+                        <select id="rating-${image.id}">
+                            <option value="" ${currentRating === "" ? "selected" : ""}>Rate</option>
+                            <option value="1" ${currentRating == 1 ? "selected" : ""}>&#9733; 1</option>
+                            <option value="2" ${currentRating == 2 ? "selected" : ""}>&#9733; 2</option>
+                            <option value="3" ${currentRating == 3 ? "selected" : ""}>&#9733; 3</option>
+                            <option value="4" ${currentRating == 4 ? "selected" : ""}>&#9733; 4</option>
+                            <option value="5" ${currentRating == 5 ? "selected" : ""}>&#9733; 5</option>
+                        </select>
+
+                        <button onclick="addRating('${image.id}')">
+                            ${currentRating ? "Update Rating" : "Rate"}
+                        </button>
+                    </div>
+
                     <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
                     <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
-
-                    <p class="meta">
-                        <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
-                    </p>
+                    <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
 
                     <hr>
 
                     <h3>Comments</h3>
+
                     <div>
                         ${(image.comments || [])
-                            .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
+                            .map(c => `<p><strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                             .join("")}
                     </div>
 
-                    <input type="text" id="comment-${image.id}" placeholder="Add comment">
-                    <button onclick="addComment('${image.id}')">Comment</button>
-
-                    <hr>
-
-                    <h3>Rate Image</h3>
-
-                    <select id="rating-${image.id}">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-
-                    <button onclick="addRating('${image.id}')">Rate</button>
-
-                    <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
-                    <p><strong>Likes:</strong> ${image.likes || 0}</p>
-
-                    <button onclick="likeImage('${image.id}')">❤️ Like</button>
+                    <div class="comment-box">
+                        <input type="text" id="comment-${image.id}" placeholder="Add a comment...">
+                        <button onclick="addComment('${image.id}')">Post</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -251,19 +288,21 @@ async function addComment(imageId) {
 
 async function addRating(imageId) {
     const ratingValue = document.getElementById(`rating-${imageId}`).value;
-    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
 
-    const rating = {
-        name: consumerName,
-        value: Number(ratingValue)
-    };
+    if (!ratingValue) {
+        alert("Please select a rating");
+        return;
+    }
 
     await fetch(`${API_URL}/api/images/${imageId}/rating`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ rating })
+        body: JSON.stringify({
+            rating: Number(ratingValue),
+            consumerEmail: localStorage.getItem("consumerEmail")
+        })
     });
 
     refreshCurrentPage();
@@ -271,7 +310,13 @@ async function addRating(imageId) {
 
 async function likeImage(imageId) {
     await fetch(`${API_URL}/api/images/${imageId}/like`, {
-        method: "POST"
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            consumerEmail: localStorage.getItem("consumerEmail")
+        })
     });
 
     refreshCurrentPage();
@@ -284,7 +329,11 @@ function calculateAverage(ratings) {
 
     const values = ratings.map(r => {
         if (typeof r === "object") {
-            return Number(r.value);
+            if (typeof r.rating === "object") {
+                return Number(r.rating.value);
+            }
+
+            return Number(r.rating || r.value);
         }
 
         return Number(r);
@@ -312,7 +361,10 @@ async function loadCreatorImages() {
     gallery.innerHTML = "<p>Loading uploaded images...</p>";
 
     try {
-        const response = await fetch(`${API_URL}/api/images`);
+        const creatorEmail = localStorage.getItem("creatorEmail");
+
+        const response = await fetch(`${API_URL}/api/creator/images?email=${encodeURIComponent(creatorEmail)}`);
+        
         const images = await response.json();
 
         if (!images || images.length === 0) {
@@ -327,7 +379,9 @@ async function loadCreatorImages() {
             card.className = "card";
 
             card.innerHTML = `
-                <img src="${image.imageUrl}" alt="${image.title}">
+                <div class="image-box">
+                    <img src="${image.imageUrl}" alt="${image.title}">
+                </div>
                 
                 <div class="card-content">
                     <h3>${image.title || "Untitled"}</h3>
@@ -338,8 +392,10 @@ async function loadCreatorImages() {
                     <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
 
                     <p><strong>Comments:</strong> ${(image.comments || []).length}</p>
-                    <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
-                    <p><strong>Likes:</strong> ${image.likes || 0}</p>
+                    <div class="post-actions">
+                        <span>♡ ${image.likes || 0} likes</span>
+                        <span>⭐ ${calculateAverage(image.ratings)}</span>
+                    </div>
 
                     <button onclick="editImage('${image.id}')">Edit</button>
                     <button onclick="deleteImage('${image.id}')">Delete</button>

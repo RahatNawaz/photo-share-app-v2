@@ -1,15 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Creator Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <a href="creator.html">← Upload New Image</a>
-    <button onclick="logoutCreator()">Logout</button>
+<div class="top-bar">
+    <div class="top-left">
+        <a href="creator.html" class="back-link">
+            <span class="back-arrow">&#8592;</span>
+            Upload New Image
+        </a>
+    </div>
 
+    <div class="top-right">
+        <button class="logout-btn" onclick="logoutCreator()">
+            Logout
+        </button>
+    </div>
+</div>
+
+<div class="container page-content">
     <h1>Creator Dashboard</h1>
     <p>View uploaded media content and metadata.</p>
 

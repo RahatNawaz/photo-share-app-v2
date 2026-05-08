@@ -1,15 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Creator Upload</title>
-    <a href="creator-dashboard.html" class="btn secondary">View My Uploads</a>
-    <button onclick="logoutCreator()">Logout</button>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <a href="index.html">← Back</a>
+<div class="top-bar">
+    <div class="top-left">
+        <a href="index.html" class="back-link">
+            <span class="back-arrow">&#8592;</span>
+            Back
+        </a>
+    </div>
+
+    <div class="top-right">
+        <a href="creator-dashboard.html" class="btn secondary">
+            View My Uploads
+        </a>
+
+        <button class="logout-btn" onclick="logoutCreator()">
+            Logout
+        </button>
+    </div>
+</div>
+
+<div class="container page-content">
     <h1>Creator Upload</h1>
 
     <form id="uploadForm">
