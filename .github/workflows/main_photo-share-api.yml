@@ -74,12 +74,23 @@ jobs:
   # =====================================================
   # FRONTEND DEPLOY
   # =====================================================
-  deploy-frontend:
+    deploy-frontend:
     runs-on: ubuntu-latest
     needs: deploy-backend
 
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F81D25B94B62447198DDE3C669060325 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B82C527FC8B849ABAE225DEC703D6C05 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F2ADEB11AB5240C18B671C8BF622B77B }}
 
       - name: Upload frontend to Azure Storage Static Website
         uses: azure/CLI@v1
