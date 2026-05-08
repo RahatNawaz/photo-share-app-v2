@@ -73,9 +73,15 @@ button:hover {
 }
 
 .btn.secondary {
-    background: rgba(255,255,255,0.18);
-    color: rgb(155, 31, 31);
-    border: 1px solid rgba(255,255,255,0.25);
+    background: linear-gradient(
+        135deg,
+        #833ab4,
+        #c13584
+    );
+
+    color: white;
+
+    border: none;
 }
 
 form {
