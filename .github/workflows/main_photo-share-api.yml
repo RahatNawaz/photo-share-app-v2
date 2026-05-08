@@ -91,7 +91,7 @@ jobs:
               --account-name photostorageacctt \
               --account-key "$AZURE_STORAGE_KEY" \
               --destination '$web' \
-              --source . \
+              --source frontend \
               --overwrite true \
               --pattern "*.html"
 
@@ -99,7 +99,7 @@ jobs:
               --account-name photostorageacctt \
               --account-key "$AZURE_STORAGE_KEY" \
               --destination '$web' \
-              --source . \
+              --source frontend \
               --overwrite true \
               --pattern "*.css"
 
@@ -107,20 +107,20 @@ jobs:
               --account-name photostorageacctt \
               --account-key "$AZURE_STORAGE_KEY" \
               --destination '$web' \
-              --source . \
+              --source frontend \
               --overwrite true \
               --pattern "*.js"
 
               az storage blob update \
               --account-name photostorageacctt \
               --account-key "$AZURE_STORAGE_KEY" \
-              --container-name '$web' \
+              --container-name '$web' \ frontend \
               --name style.css \
               --content-cache-control "no-cache"
 
             az storage blob update \
               --account-name photostorageacctt \
               --account-key "$AZURE_STORAGE_KEY" \
-              --container-name '$web' \
+              --container-name '$web' \ frontend \
               --name script.js \
               --content-cache-control "no-cache"
