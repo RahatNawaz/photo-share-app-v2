@@ -8,6 +8,7 @@ load_dotenv()
 CONNECTION_STRING = os.getenv("STORAGE_CONNECTION_STRING")
 CONTAINER_NAME = "images"
 
+# this is a test comment to test yml
 blob_service_client = BlobServiceClient.from_connection_string(CONNECTION_STRING)
 container_client = blob_service_client.get_container_client(CONTAINER_NAME)
 
