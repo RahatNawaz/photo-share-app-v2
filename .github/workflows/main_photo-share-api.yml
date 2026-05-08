@@ -110,3 +110,17 @@ jobs:
               --source . \
               --overwrite true \
               --pattern "*.js"
+
+              az storage blob update \
+              --account-name YOUR_STORAGE_ACCOUNT_NAME \
+              --account-key "$AZURE_STORAGE_KEY" \
+              --container-name '$web' \
+              --name style.css \
+              --content-cache-control "no-cache"
+
+            az storage blob update \
+              --account-name YOUR_STORAGE_ACCOUNT_NAME \
+              --account-key "$AZURE_STORAGE_KEY" \
+              --container-name '$web' \
+              --name script.js \
+              --content-cache-control "no-cache"
