@@ -2,7 +2,7 @@
 // CONFIG
 // =====================================================
 // const API_URL = "http://127.0.0.1:5000";
-const API_URL = "https://photo-share-api.azurewebsites.net";
+const API_URL = "https://photo-share-api-gpg2frh7gvcfajgd.switzerlandnorth-01.azurewebsites.net";
 
 
 // =====================================================
