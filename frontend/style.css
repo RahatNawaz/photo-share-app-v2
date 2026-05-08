@@ -250,6 +250,53 @@ textarea {
     line-height: 1;
 }
 
+.top-bar {
+    width: 100%;
+    background: white;
+    border-bottom: 1px solid #dbdbdb;
+    padding: 14px 30px;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.top-left,
+.top-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #262626;
+    font-size: 15px;
+}
+
+.logout-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.logout-btn:hover {
+    opacity: 0.9;
+}
+
+.page-content {
+    padding-top: 20px;
+}
+
 hr {
     border: none;
     border-top: 1px solid #efefef;

@@ -7,15 +7,25 @@
 </head>
 <body>
 
-<div class="container">
-    <a href="index.html" class="back-link">
-        <span class="back-arrow">&#8592;</span>
-        Back
-    </a>
-    <h1>Consumer Gallery</h1>
+<div class="top-bar">
+    <div class="top-left">
+        <a href="index.html" class="back-link">
+            <span class="back-arrow">&#8592;</span>
+            Back
+        </a>
+    </div>
 
-    <p id="loggedInUser"></p>
-    <button onclick="logoutConsumer()">Logout</button>
+    <div class="top-right">
+        <span id="loggedInUser" class="user-name"></span>
+
+        <button class="logout-btn" onclick="logoutConsumer()">
+            Logout
+        </button>
+    </div>
+</div>
+
+<div class="container page-content">
+    <h1>Consumer Gallery</h1>
 
     <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search by title, caption, or location">
