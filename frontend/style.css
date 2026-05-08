@@ -1,24 +1,31 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #fafafa;
+
+    background:
+        linear-gradient(
+            135deg,
+            #667eea 0%,
+            #764ba2 35%,
+            #8e44ad 65%,
+            #c471ed 100%
+        );
+
+    background-attachment: fixed;
+    min-height: 100vh;
+
     color: #262626;
 }
 
 .container {
-    max-width: 950px;
-    margin: 30px auto;
-    padding: 20px;
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 30px;
 }
 
 .center {
     text-align: center;
     margin-top: 120px;
-}
-
-h1 {
-    color: #262626;
-    font-size: 32px;
 }
 
 a {
@@ -30,35 +37,62 @@ a {
 .btn,
 button {
     display: inline-block;
-    background: #0095f6;
+
+    background: linear-gradient(
+        135deg,
+        #833ab4,
+        #c13584,
+        #e1306c
+    );
+
     color: white;
-    padding: 10px 18px;
+
+    padding: 11px 20px;
+
     margin: 5px;
+
     border: none;
-    border-radius: 8px;
+
+    border-radius: 10px;
+
     text-decoration: none;
+
     cursor: pointer;
+
     font-size: 14px;
+
     font-weight: 600;
+
+    transition: 0.2s ease;
+}
+
+.btn:hover,
+button:hover {
+    transform: translateY(-2px);
+    opacity: 0.95;
 }
 
 .btn.secondary {
-    background: #efefef;
-    color: #262626;
-}
-
-button:hover,
-.btn:hover {
-    opacity: 0.85;
+    background: rgba(255,255,255,0.18);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.25);
 }
 
 form {
-    background: white;
+    background: rgba(255,255,255,0.94);
+
     padding: 28px;
-    border: 1px solid #dbdbdb;
-    border-radius: 12px;
+
+    border-radius: 18px;
+
     max-width: 430px;
+
     margin-top: 20px;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.12);
+
+    backdrop-filter: blur(10px);
 }
 
 input,
@@ -70,7 +104,7 @@ select {
     border: 1px solid #dbdbdb;
     border-radius: 8px;
     box-sizing: border-box;
-    background: #fafafa;
+    background: rgba(255,255,255,0.95);
 }
 
 textarea {
@@ -78,11 +112,17 @@ textarea {
 }
 
 .search-box {
-    background: white;
-    border: 1px solid #dbdbdb;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 25px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+
+    border-radius: 16px;
+
+    padding: 18px;
+
+    margin-bottom: 30px;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.08);
 }
 
 .gallery {
@@ -92,10 +132,21 @@ textarea {
 }
 
 .card {
-    background: white;
-    border: 1px solid #dbdbdb;
-    border-radius: 14px;
+    background: rgba(255,255,255,0.95);
+
+    border-radius: 18px;
+
     overflow: hidden;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.15);
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.18);
 }
 
 .image-box {
@@ -237,7 +288,7 @@ textarea {
     margin-bottom: 20px;
     font-size: 15px;
     font-weight: 600;
-    color: #262626;
+    color: white;
     text-decoration: none;
 }
 
@@ -252,8 +303,6 @@ textarea {
 
 .top-bar {
     width: 100%;
-    background: white;
-    border-bottom: 1px solid #dbdbdb;
     padding: 14px 30px;
     box-sizing: border-box;
 
@@ -264,6 +313,11 @@ textarea {
     position: sticky;
     top: 0;
     z-index: 1000;
+
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+
+    border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
 .top-left,
@@ -275,7 +329,7 @@ textarea {
 
 .user-name {
     font-weight: 600;
-    color: #262626;
+    color: white;
     font-size: 15px;
 }
 
@@ -295,6 +349,36 @@ textarea {
 
 .page-content {
     padding-top: 20px;
+}
+
+h1 {
+    color: white;
+    font-size: 34px;
+    margin-bottom: 10px;
+}
+
+.container > p {
+    color: #f3f3f3;
+}
+
+.card p,
+.card-content p,
+form p {
+    color: #262626;
+}
+
+.card,
+form,
+.search-box {
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+form:hover,
+.search-box:hover {
+    box-shadow:
+        0 12px 35px rgba(0,0,0,0.18);
 }
 
 hr {
