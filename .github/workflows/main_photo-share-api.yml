@@ -78,44 +78,35 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-backend
 
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F81D25B94B62447198DDE3C669060325 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B82C527FC8B849ABAE225DEC703D6C05 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F2ADEB11AB5240C18B671C8BF622B77B }}
-
       - name: Upload frontend to Azure Storage Static Website
         uses: azure/CLI@v1
+        env:
+          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
         with:
           inlineScript: |
             az storage blob upload-batch \
               --account-name photostorageacctt \
+              --account-key "$AZURE_STORAGE_KEY" \
               --destination '$web' \
               --source . \
               --overwrite true \
-              --account-key "${{ secrets.AZURE_STORAGE_KEY }}" \
               --pattern "*.html"
 
             az storage blob upload-batch \
               --account-name photostorageacctt \
+              --account-key "$AZURE_STORAGE_KEY" \
               --destination '$web' \
               --source . \
               --overwrite true \
-              --account-key "${{ secrets.AZURE_STORAGE_KEY }}" \
               --pattern "*.css"
 
             az storage blob upload-batch \
               --account-name photostorageacctt \
+              --account-key "$AZURE_STORAGE_KEY" \
               --destination '$web' \
               --source . \
               --overwrite true \
-              --account-key "${{ secrets.AZURE_STORAGE_KEY }}" \
               --pattern "*.js"
