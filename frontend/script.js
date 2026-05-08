@@ -97,6 +97,14 @@ function displayImages(images) {
         const card = document.createElement("div");
         card.className = "card";
 
+        const consumerEmail = localStorage.getItem("consumerEmail");
+
+        const myRating = image.ratings
+            ? image.ratings.find(r => r.email === consumerEmail)
+            : null;
+
+        const currentRating = myRating ? myRating.rating : "";
+
         card.innerHTML = `
             <div class="image-box">
                 <img src="${image.imageUrl}" alt="${image.title}">
@@ -122,11 +130,12 @@ function displayImages(images) {
 
                 <div class="rating-box">
                     <select id="rating-${image.id}">
-                        <option value="1">⭐ 1</option>
-                        <option value="2">⭐ 2</option>
-                        <option value="3">⭐ 3</option>
-                        <option value="4">⭐ 4</option>
-                        <option value="5">⭐ 5</option>
+                        <option value="" ${currentRating === "" ? "selected" : ""}>Rate</option>
+                        <option value="1" ${currentRating == 1 ? "selected" : ""}>★ 1</option>
+                        <option value="2" ${currentRating == 2 ? "selected" : ""}>★ 2</option>
+                        <option value="3" ${currentRating == 3 ? "selected" : ""}>★ 3</option>
+                        <option value="4" ${currentRating == 4 ? "selected" : ""}>★ 4</option>
+                        <option value="5" ${currentRating == 5 ? "selected" : ""}>★ 5</option>
                     </select>
 
                     <button onclick="addRating('${image.id}')">Rate</button>
@@ -164,7 +173,6 @@ function displayImages(images) {
 async function loadSingleImage() {
     const params = new URLSearchParams(window.location.search);
     const imageId = params.get("id");
-
     const container = document.getElementById("imageDetails");
 
     if (!imageId) {
@@ -176,8 +184,20 @@ async function loadSingleImage() {
         const response = await fetch(`${API_URL}/api/images/${imageId}`);
         const image = await response.json();
 
+        const consumerEmail = localStorage.getItem("consumerEmail");
+
+        const isLiked =
+            image.likedBy &&
+            image.likedBy.includes(consumerEmail);
+
+        const myRating = image.ratings
+            ? image.ratings.find(r => r.email === consumerEmail)
+            : null;
+
+        const currentRating = myRating ? myRating.rating : "";
+
         container.innerHTML = `
-            <div class="card">
+            <div class="card single-card">
                 <div class="details-image-box">
                     <img src="${image.imageUrl}" alt="${image.title}">
                 </div>
@@ -186,43 +206,49 @@ async function loadSingleImage() {
                     <h1>${image.title || "Untitled"}</h1>
                     <p>${image.caption || ""}</p>
 
+                    <div class="post-actions">
+                        <button class="like-btn" onclick="likeImage('${image.id}')">
+                            ${isLiked ? "&#9829;" : "&#9825;"}
+                        </button>
+
+                        <span>${image.likes || 0} likes</span>
+                        <span class="divider"></span>
+                        <span class="rating-display">&#9733; ${calculateAverage(image.ratings)}</span>
+                    </div>
+
+                    <div class="rating-box">
+                        <select id="rating-${image.id}">
+                            <option value="" ${currentRating === "" ? "selected" : ""}>Rate</option>
+                            <option value="1" ${currentRating == 1 ? "selected" : ""}>&#9733; 1</option>
+                            <option value="2" ${currentRating == 2 ? "selected" : ""}>&#9733; 2</option>
+                            <option value="3" ${currentRating == 3 ? "selected" : ""}>&#9733; 3</option>
+                            <option value="4" ${currentRating == 4 ? "selected" : ""}>&#9733; 4</option>
+                            <option value="5" ${currentRating == 5 ? "selected" : ""}>&#9733; 5</option>
+                        </select>
+
+                        <button onclick="addRating('${image.id}')">
+                            ${currentRating ? "Update Rating" : "Rate"}
+                        </button>
+                    </div>
+
                     <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
                     <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
-
-                    <p class="meta">
-                        <strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}
-                    </p>
+                    <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
 
                     <hr>
 
                     <h3>Comments</h3>
+
                     <div>
                         ${(image.comments || [])
-                            .map(c => `<p>• <strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
+                            .map(c => `<p><strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
                             .join("")}
                     </div>
 
-                    <input type="text" id="comment-${image.id}" placeholder="Add comment">
-                    <button onclick="addComment('${image.id}')">Comment</button>
-
-                    <hr>
-
-                    <h3>Rate Image</h3>
-
-                    <select id="rating-${image.id}">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-
-                    <button onclick="addRating('${image.id}')">Rate</button>
-
-                    <p><strong>Average Rating:</strong> ${calculateAverage(image.ratings)}</p>
-                    <p><strong>Likes:</strong> ${image.likes || 0}</p>
-
-                    <button onclick="likeImage('${image.id}')">❤️ Like</button>
+                    <div class="comment-box">
+                        <input type="text" id="comment-${image.id}" placeholder="Add a comment...">
+                        <button onclick="addComment('${image.id}')">Post</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -262,12 +288,11 @@ async function addComment(imageId) {
 
 async function addRating(imageId) {
     const ratingValue = document.getElementById(`rating-${imageId}`).value;
-    const consumerName = localStorage.getItem("consumerName") || "Anonymous";
 
-    const rating = {
-        name: consumerName,
-        value: Number(ratingValue)
-    };
+    if (!ratingValue) {
+        alert("Please select a rating");
+        return;
+    }
 
     await fetch(`${API_URL}/api/images/${imageId}/rating`, {
         method: "POST",
@@ -275,7 +300,7 @@ async function addRating(imageId) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            rating: rating,
+            rating: Number(ratingValue),
             consumerEmail: localStorage.getItem("consumerEmail")
         })
     });

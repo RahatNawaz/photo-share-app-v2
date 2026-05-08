@@ -117,25 +117,32 @@ def add_rating(image_id):
 
     item = container.read_item(item=image_id, partition_key=image_id)
 
-    if "ratedBy" not in item:
-        item["ratedBy"] = []
-
-    if consumer_email in item["ratedBy"]:
-        return jsonify({"error": "You have already rated this image"}), 400
-
     if "ratings" not in item:
         item["ratings"] = []
 
-    item["ratings"].append({
-        "email": consumer_email,
-        "rating": rating
-    })
+    existing_rating = None
 
-    item["ratedBy"].append(consumer_email)
+    for r in item["ratings"]:
+        if r.get("email") == consumer_email:
+            existing_rating = r
+            break
+
+    if existing_rating:
+        existing_rating["rating"] = rating
+        message = "Rating updated"
+    else:
+        item["ratings"].append({
+            "email": consumer_email,
+            "rating": rating
+        })
+        message = "Rating added"
 
     container.replace_item(item=image_id, body=item)
 
-    return jsonify({"message": "Rating added"})
+    return jsonify({
+        "message": message,
+        "ratings": item["ratings"]
+    })
 
 @app.route("/api/images/<image_id>", methods=["GET"])
 def get_single_image(image_id):
@@ -179,16 +186,20 @@ def like_image(image_id):
         item["likedBy"] = []
 
     if consumer_email in item["likedBy"]:
-        return jsonify({"error": "You have already liked this image"}), 400
+        item["likedBy"].remove(consumer_email)
+        message = "Image unliked"
+    else:
+        item["likedBy"].append(consumer_email)
+        message = "Image liked"
 
-    item["likedBy"].append(consumer_email)
     item["likes"] = len(item["likedBy"])
 
     container.replace_item(item=image_id, body=item)
 
     return jsonify({
-        "message": "Image liked",
-        "likes": item["likes"]
+        "message": message,
+        "likes": item["likes"],
+        "likedBy": item["likedBy"]
     })
 
 @app.route("/api/consumer/register", methods=["POST"])
