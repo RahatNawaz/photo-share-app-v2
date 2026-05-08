@@ -241,8 +241,15 @@ textarea {
 
 .details-btn {
     margin-top: 12px;
-    background: #efefef;
-    color: #262626;
+    background: linear-gradient(
+        135deg,
+        #833ab4,
+        #c13584,
+        #e1306c
+    );
+    color: white;
+    border: none;
+    display: inline-block;
 }
 
 .card-content {
