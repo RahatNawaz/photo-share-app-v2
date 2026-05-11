@@ -587,3 +587,67 @@ hr {
         font-size: 26px;
     }
 }
+
+/* =====================================================
+   CREATOR COMMENT REPLY UI
+   ===================================================== */
+.creator-comments-section {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #efefef;
+}
+
+.creator-comments-section h4 {
+    margin: 0 0 12px;
+    color: #262626;
+}
+
+.creator-comment-item {
+    background: #f8f8fb;
+    border: 1px solid #ececf3;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.reply-list {
+    margin: 8px 0 8px 16px;
+    padding-left: 12px;
+    border-left: 3px solid rgba(193, 53, 132, 0.25);
+}
+
+.reply-item {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin: 6px 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.reply-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: rgba(131, 58, 180, 0.12);
+    color: #833ab4;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.creator-reply-box {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.creator-reply-box input {
+    margin: 0;
+}
+
+.creator-reply-box button {
+    margin: 0;
+    white-space: nowrap;
+}

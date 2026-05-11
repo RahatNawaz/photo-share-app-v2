@@ -36,8 +36,7 @@ if (uploadForm) {
             const result = await response.json();
 
             if (response.ok) {
-                const generatedTags = result.tags && result.tags.length ? result.tags.join(", ") : "No tags";
-                message.innerText = `Image uploaded successfully! Auto tags: ${generatedTags}`;
+                message.innerText = "Image uploaded successfully!";
                 uploadForm.reset();
             } else {
                 message.innerText = result.error || "Upload failed.";
@@ -141,6 +140,82 @@ function renderTags(tags) {
     return tags.map(tag => `<span class="tag-pill">#${tag}</span>`).join("");
 }
 
+
+function normalizeComment(comment, index) {
+    if (typeof comment === "string") {
+        return {
+            id: String(index),
+            name: "Anonymous",
+            text: comment,
+            replies: []
+        };
+    }
+
+    return {
+        id: comment.id || String(index),
+        name: comment.name || "Anonymous",
+        text: comment.text || "",
+        role: comment.role || "consumer",
+        replies: comment.replies || []
+    };
+}
+
+function renderReplies(replies) {
+    if (!replies || replies.length === 0) {
+        return "";
+    }
+
+    return `
+        <div class="reply-list">
+            ${replies.map(reply => `
+                <div class="reply-item">
+                    <strong>${reply.name || "Creator"}:</strong> ${reply.text || ""}
+                    <span class="reply-badge">creator reply</span>
+                </div>
+            `).join("")}
+        </div>
+    `;
+}
+
+function renderCommentsForConsumer(comments) {
+    if (!comments || comments.length === 0) {
+        return `<p class="meta">No comments yet.</p>`;
+    }
+
+    return comments.map((comment, index) => {
+        const c = normalizeComment(comment, index);
+        return `
+            <div class="comment-item">
+                <p><strong>${c.name}:</strong> ${c.text}</p>
+                ${renderReplies(c.replies)}
+            </div>
+        `;
+    }).join("");
+}
+
+function renderCommentsForCreator(image) {
+    const comments = image.comments || [];
+
+    if (comments.length === 0) {
+        return `<p class="meta">No comments yet.</p>`;
+    }
+
+    return comments.map((comment, index) => {
+        const c = normalizeComment(comment, index);
+        return `
+            <div class="creator-comment-item">
+                <p><strong>${c.name}:</strong> ${c.text}</p>
+                ${renderReplies(c.replies)}
+
+                <div class="creator-reply-box">
+                    <input type="text" id="reply-${image.id}-${c.id}" placeholder="Reply to this comment...">
+                    <button onclick="replyToComment('${image.id}', '${c.id}')">Reply</button>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
 // =====================================================
 // IMAGE DETAILS PAGE
 // =====================================================
@@ -180,18 +255,14 @@ async function loadSingleImage() {
                         </div>
 
                         <div class="creator-under-image">
-                            <p class="creator-text"><strong>Creator:</strong> ${image.creatorName || image.creatorEmail || "Unknown creator"}</p>
+                            <p class="creator-text"><strong>Creator:</strong> ${image.creatorName || "Unknown creator"}</p>
                         </div>
 
                         <div class="comments-under-image">
                             <h3>Comments <span class="comment-count">(${comments.length})</span></h3>
 
                             <div class="comments-list">
-                                ${comments.length === 0
-                                    ? `<p class="meta">No comments yet.</p>`
-                                    : comments
-                                        .map(c => `<p class="comment-item"><strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
-                                        .join("")}
+                                ${renderCommentsForConsumer(comments)}
                             </div>
 
                             <div class="comment-box">
@@ -259,6 +330,8 @@ async function addComment(imageId) {
 
     const comment = {
         name: consumerName,
+        email: localStorage.getItem("consumerEmail"),
+        role: "consumer",
         text: commentText
     };
 
@@ -271,6 +344,41 @@ async function addComment(imageId) {
     });
 
     refreshCurrentPage();
+}
+
+
+async function replyToComment(imageId, commentId) {
+    const input = document.getElementById(`reply-${imageId}-${commentId}`);
+    const replyText = input ? input.value.trim() : "";
+
+    if (!replyText) {
+        alert("Please write a reply first.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/images/${imageId}/comments/${commentId}/reply`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                reply: replyText,
+                creatorName: localStorage.getItem("creatorName") || "Creator",
+                creatorEmail: localStorage.getItem("creatorEmail") || ""
+            })
+        });
+
+        if (!response.ok) {
+            alert("Reply failed.");
+            return;
+        }
+
+        loadCreatorImages();
+    } catch (error) {
+        console.error(error);
+        alert("Could not connect to backend.");
+    }
 }
 
 async function addRating(imageId) {
@@ -351,7 +459,6 @@ async function loadCreatorImages() {
         const creatorEmail = localStorage.getItem("creatorEmail");
 
         const response = await fetch(`${API_URL}/api/creator/images?email=${encodeURIComponent(creatorEmail)}`);
-        
         const images = await response.json();
 
         if (!images || images.length === 0) {
@@ -363,13 +470,13 @@ async function loadCreatorImages() {
 
         images.forEach(image => {
             const card = document.createElement("div");
-            card.className = "card";
+            card.className = "card creator-dashboard-card";
 
             card.innerHTML = `
-                <div class="image-box">
-                    <img src="${image.imageUrl}" alt="${image.title}">
+                <div class="image-box gallery-image-box">
+                    <img src="${image.imageUrl}" alt="${image.title || "Image"}">
                 </div>
-                
+
                 <div class="card-content">
                     <h3>${image.title || "Untitled"}</h3>
                     <p>${image.caption || ""}</p>
@@ -378,10 +485,15 @@ async function loadCreatorImages() {
                     <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
                     <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
 
-                    <p><strong>Comments:</strong> ${(image.comments || []).length}</p>
                     <div class="post-actions">
                         <span>♡ ${image.likes || 0} likes</span>
                         <span>⭐ ${calculateAverage(image.ratings)}</span>
+                        <span>💬 ${(image.comments || []).length} comments</span>
+                    </div>
+
+                    <div class="creator-comments-section">
+                        <h4>Comments & Replies</h4>
+                        ${renderCommentsForCreator(image)}
                     </div>
 
                     <button onclick="editImage('${image.id}')">Edit</button>
