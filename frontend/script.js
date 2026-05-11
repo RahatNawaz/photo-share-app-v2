@@ -102,43 +102,42 @@ function displayImages(images) {
         const card = document.createElement("div");
         card.className = "card";
 
-        const consumerEmail = localStorage.getItem("consumerEmail");
-        const isLiked =
-            image.likedBy &&
-            image.likedBy.includes(consumerEmail);
-
-        const commentCount = getCommentCount(image.comments);
         const averageRating = calculateAverage(image.ratings);
+        const tagsHtml = renderTags(image.tags);
+        const creatorName = image.creatorName || "Unknown creator";
 
         card.innerHTML = `
             <a class="image-link" href="image.html?id=${image.id}">
-                <div class="image-box">
+                <div class="image-box gallery-image-box">
                     <img src="${image.imageUrl}" alt="${image.title || "Image"}">
                 </div>
             </a>
 
-            <div class="card-content">
+            <div class="card-content gallery-card-content">
                 <h3>${image.title || "Untitled"}</h3>
-                <p class="creator-text">From ${image.creatorEmail || "Unknown creator"}</p>
+                <p class="gallery-creator">by ${creatorName}</p>
 
-                <div class="post-actions gallery-actions">
-                    <button class="like-btn gallery-like-btn" onclick="likeImage('${image.id}')">
-                        ${isLiked ? "♥ Dislike" : "♡ Like"}
-                    </button>
-
-                    <span>${image.likes || 0} likes</span>
-                    <span class="divider"></span>
-                    <span>💬 ${commentCount} comments</span>
-                    <span class="divider"></span>
-                    <span class="rating-display">⭐ ${averageRating}</span>
+                <div class="gallery-tags">
+                    ${tagsHtml || '<span class="tag-pill muted-tag">No tags</span>'}
                 </div>
 
-                <a class="btn secondary details-btn" href="image.html?id=${image.id}">View Details</a>
+                <div class="gallery-info-row">
+                    <span class="gallery-location-text">📍 ${image.location || "Unknown location"}</span>
+                    <span class="gallery-rating-text">⭐ ${averageRating}</span>
+                </div>
             </div>
         `;
 
         gallery.appendChild(card);
     });
+}
+
+function renderTags(tags) {
+    if (!tags || tags.length === 0) {
+        return "";
+    }
+
+    return tags.map(tag => `<span class="tag-pill">#${tag}</span>`).join("");
 }
 
 // =====================================================
