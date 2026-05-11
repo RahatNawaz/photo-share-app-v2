@@ -36,7 +36,8 @@ if (uploadForm) {
             const result = await response.json();
 
             if (response.ok) {
-                message.innerText = "Image uploaded successfully!";
+                const generatedTags = result.tags && result.tags.length ? result.tags.join(", ") : "No tags";
+                message.innerText = `Image uploaded successfully! Auto tags: ${generatedTags}`;
                 uploadForm.reset();
             } else {
                 message.innerText = result.error || "Upload failed.";
