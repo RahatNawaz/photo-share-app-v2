@@ -107,7 +107,7 @@ function displayImages(images) {
         const creatorName = image.creatorName || "Unknown creator";
 
         card.innerHTML = `
-            <a class="image-link" href="image.html?id=${image.id}">
+            <a class="image-link" href="image.html?id=${image.id}&from=consumer">
                 <div class="image-box gallery-image-box">
                     <img src="${image.imageUrl}" alt="${image.title || "Image"}">
                 </div>
@@ -223,7 +223,40 @@ function renderCommentsForCreator(image) {
 // =====================================================
 // IMAGE DETAILS PAGE
 // =====================================================
+function getDetailsBackTarget() {
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get("from");
+    const role = localStorage.getItem("role");
+
+    if (from === "creator" || role === "creator") {
+        return {
+            href: "creator-dashboard.html",
+            label: "Back to Creator Dashboard"
+        };
+    }
+
+    return {
+        href: "consumer.html",
+        label: "Back to Gallery"
+    };
+}
+
+function setupDetailsBackLink() {
+    const backLink = document.getElementById("detailsBackLink");
+    const backText = document.getElementById("detailsBackText");
+
+    if (!backLink) return;
+
+    const target = getDetailsBackTarget();
+    backLink.href = target.href;
+
+    if (backText) {
+        backText.innerText = target.label;
+    }
+}
+
 async function loadSingleImage() {
+    setupDetailsBackLink();
     const params = new URLSearchParams(window.location.search);
     const imageId = params.get("id");
     const container = document.getElementById("imageDetails");
@@ -509,7 +542,7 @@ async function loadCreatorImages() {
             const commentsCount = getCommentCount(image.comments);
 
             card.innerHTML = `
-                <a class="image-link" href="image.html?id=${image.id}">
+                <a class="image-link" href="image.html?id=${image.id}&from=creator">
                     <div class="image-box gallery-image-box">
                         <img src="${image.imageUrl}" alt="${image.title || "Image"}">
                     </div>
@@ -535,7 +568,7 @@ async function loadCreatorImages() {
                     </div>
 
                     <div class="creator-card-actions">
-                        <a class="btn details-btn" href="image.html?id=${image.id}">View Details</a>
+                        <a class="btn details-btn" href="image.html?id=${image.id}&from=creator">View Details</a>
                         <button onclick="editImage('${image.id}')">Edit</button>
                         <button onclick="deleteImage('${image.id}')">Delete</button>
                     </div>
