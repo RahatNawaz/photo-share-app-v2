@@ -84,6 +84,10 @@ async function searchImages() {
     }
 }
 
+function getCommentCount(comments) {
+    return comments ? comments.length : 0;
+}
+
 function displayImages(images) {
     const gallery = document.getElementById("gallery");
 
@@ -99,64 +103,34 @@ function displayImages(images) {
         card.className = "card";
 
         const consumerEmail = localStorage.getItem("consumerEmail");
+        const isLiked =
+            image.likedBy &&
+            image.likedBy.includes(consumerEmail);
 
-        const myRating = image.ratings
-            ? image.ratings.find(r => r.email === consumerEmail)
-            : null;
-
-        const currentRating = myRating ? myRating.rating : "";
+        const commentCount = getCommentCount(image.comments);
+        const averageRating = calculateAverage(image.ratings);
 
         card.innerHTML = `
-            <div class="image-box">
-                <img src="${image.imageUrl}" alt="${image.title}">
-            </div>
+            <a class="image-link" href="image.html?id=${image.id}">
+                <div class="image-box">
+                    <img src="${image.imageUrl}" alt="${image.title || "Image"}">
+                </div>
+            </a>
 
             <div class="card-content">
                 <h3>${image.title || "Untitled"}</h3>
                 <p class="creator-text">From ${image.creatorEmail || "Unknown creator"}</p>
 
-                <div class="post-actions">
-                    <button class="like-btn" onclick="likeImage('${image.id}')">
-                        ${
-                            image.likedBy &&
-                            image.likedBy.includes(localStorage.getItem("consumerEmail"))
-                                ? "♥"
-                                : "♡"
-                        }
+                <div class="post-actions gallery-actions">
+                    <button class="like-btn gallery-like-btn" onclick="likeImage('${image.id}')">
+                        ${isLiked ? "♥ Dislike" : "♡ Like"}
                     </button>
+
                     <span>${image.likes || 0} likes</span>
                     <span class="divider"></span>
-                    <span class="rating-display">⭐ ${calculateAverage(image.ratings)}</span>
-                </div>
-
-                <div class="rating-box">
-                    <select id="rating-${image.id}">
-                        <option value="" ${currentRating === "" ? "selected" : ""}>Rate</option>
-                        <option value="1" ${currentRating == 1 ? "selected" : ""}>★ 1</option>
-                        <option value="2" ${currentRating == 2 ? "selected" : ""}>★ 2</option>
-                        <option value="3" ${currentRating == 3 ? "selected" : ""}>★ 3</option>
-                        <option value="4" ${currentRating == 4 ? "selected" : ""}>★ 4</option>
-                        <option value="5" ${currentRating == 5 ? "selected" : ""}>★ 5</option>
-                    </select>
-
-                    <button onclick="addRating('${image.id}')">Rate</button>
-                </div>
-
-                <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
-                <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
-                <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
-
-                <hr>
-
-                <div>
-                    ${(image.comments || [])
-                        .map(c => `<p><strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
-                        .join("")}
-                </div>
-
-                <div class="comment-box">
-                    <input type="text" id="comment-${image.id}" placeholder="Add a comment...">
-                    <button onclick="addComment('${image.id}')">Post</button>
+                    <span>💬 ${commentCount} comments</span>
+                    <span class="divider"></span>
+                    <span class="rating-display">⭐ ${averageRating}</span>
                 </div>
 
                 <a class="btn secondary details-btn" href="image.html?id=${image.id}">View Details</a>
@@ -166,7 +140,6 @@ function displayImages(images) {
         gallery.appendChild(card);
     });
 }
-
 
 // =====================================================
 // IMAGE DETAILS PAGE
