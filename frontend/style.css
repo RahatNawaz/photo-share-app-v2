@@ -415,3 +415,106 @@ hr {
     font-weight: 700;
     color: #e02424;
 }
+
+
+/* =====================================================
+   UPDATED IMAGE DETAILS LAYOUT
+   ===================================================== */
+.single-card.details-card {
+    max-width: 1180px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.details-main-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+    gap: 0;
+    align-items: stretch;
+}
+
+.details-left-panel {
+    background: #ffffff;
+}
+
+.details-info-panel {
+    padding: 28px;
+    background: rgba(255, 255, 255, 0.98);
+    border-left: 1px solid #efefef;
+}
+
+.details-title {
+    color: #262626;
+    font-size: 32px;
+    line-height: 1.2;
+    margin: 0 0 12px;
+}
+
+.details-caption {
+    color: #444;
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.details-actions {
+    flex-wrap: wrap;
+    margin: 18px 0;
+}
+
+.details-rating-box {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.details-meta-box {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #efefef;
+}
+
+.creator-under-image,
+.comments-under-image {
+    padding: 18px 22px;
+    background: #ffffff;
+}
+
+.creator-under-image {
+    border-bottom: 1px solid #efefef;
+}
+
+.comments-under-image h3 {
+    margin: 0 0 12px;
+    color: #262626;
+}
+
+.comment-count {
+    color: #8e8e8e;
+    font-size: 15px;
+}
+
+.comments-list {
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.comment-item {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+    .details-main-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .details-info-panel {
+        border-left: none;
+        border-top: 1px solid #efefef;
+    }
+
+    .details-title {
+        font-size: 26px;
+    }
+}

@@ -169,59 +169,72 @@ async function loadSingleImage() {
             : null;
 
         const currentRating = myRating ? myRating.rating : "";
+        const comments = image.comments || [];
 
         container.innerHTML = `
-            <div class="card single-card">
-                <div class="details-image-box">
-                    <img src="${image.imageUrl}" alt="${image.title}">
-                </div>
+            <div class="card single-card details-card">
+                <div class="details-main-layout">
+                    <div class="details-left-panel">
+                        <div class="details-image-box">
+                            <img src="${image.imageUrl}" alt="${image.title || "Image"}">
+                        </div>
 
-                <div class="card-content">
-                    <h1>${image.title || "Untitled"}</h1>
-                    <p>${image.caption || ""}</p>
+                        <div class="creator-under-image">
+                            <p class="creator-text"><strong>Creator:</strong> ${image.creatorName || image.creatorEmail || "Unknown creator"}</p>
+                        </div>
 
-                    <div class="post-actions">
-                        <button class="like-btn" onclick="likeImage('${image.id}')">
-                            ${isLiked ? "&#9829;" : "&#9825;"}
-                        </button>
+                        <div class="comments-under-image">
+                            <h3>Comments <span class="comment-count">(${comments.length})</span></h3>
 
-                        <span>${image.likes || 0} likes</span>
-                        <span class="divider"></span>
-                        <span class="rating-display">&#9733; ${calculateAverage(image.ratings)}</span>
+                            <div class="comments-list">
+                                ${comments.length === 0
+                                    ? `<p class="meta">No comments yet.</p>`
+                                    : comments
+                                        .map(c => `<p class="comment-item"><strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
+                                        .join("")}
+                            </div>
+
+                            <div class="comment-box">
+                                <input type="text" id="comment-${image.id}" placeholder="Add a comment...">
+                                <button onclick="addComment('${image.id}')">Post</button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="rating-box">
-                        <select id="rating-${image.id}">
-                            <option value="" ${currentRating === "" ? "selected" : ""}>Rate</option>
-                            <option value="1" ${currentRating == 1 ? "selected" : ""}>&#9733; 1</option>
-                            <option value="2" ${currentRating == 2 ? "selected" : ""}>&#9733; 2</option>
-                            <option value="3" ${currentRating == 3 ? "selected" : ""}>&#9733; 3</option>
-                            <option value="4" ${currentRating == 4 ? "selected" : ""}>&#9733; 4</option>
-                            <option value="5" ${currentRating == 5 ? "selected" : ""}>&#9733; 5</option>
-                        </select>
+                    <div class="details-info-panel">
+                        <h1 class="details-title">${image.title || "Untitled"}</h1>
+                        <p class="details-caption">${image.caption || "No caption available."}</p>
 
-                        <button onclick="addRating('${image.id}')">
-                            ${currentRating ? "Update Rating" : "Rate"}
-                        </button>
-                    </div>
+                        <div class="post-actions details-actions">
+                            <button class="like-btn" onclick="likeImage('${image.id}')">
+                                ${isLiked ? "&#9829;" : "&#9825;"}
+                            </button>
 
-                    <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
-                    <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
-                    <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
+                            <span>${image.likes || 0} likes</span>
+                            <span class="divider"></span>
+                            <span class="rating-display">&#9733; ${calculateAverage(image.ratings)}</span>
+                        </div>
 
-                    <hr>
+                        <div class="rating-box details-rating-box">
+                            <select id="rating-${image.id}">
+                                <option value="" ${currentRating === "" ? "selected" : ""}>Rate</option>
+                                <option value="1" ${currentRating == 1 ? "selected" : ""}>&#9733; 1</option>
+                                <option value="2" ${currentRating == 2 ? "selected" : ""}>&#9733; 2</option>
+                                <option value="3" ${currentRating == 3 ? "selected" : ""}>&#9733; 3</option>
+                                <option value="4" ${currentRating == 4 ? "selected" : ""}>&#9733; 4</option>
+                                <option value="5" ${currentRating == 5 ? "selected" : ""}>&#9733; 5</option>
+                            </select>
 
-                    <h3>Comments</h3>
+                            <button onclick="addRating('${image.id}')">
+                                ${currentRating ? "Update Rating" : "Rate"}
+                            </button>
+                        </div>
 
-                    <div>
-                        ${(image.comments || [])
-                            .map(c => `<p><strong>${c.name || "Anonymous"}:</strong> ${c.text || c}</p>`)
-                            .join("")}
-                    </div>
-
-                    <div class="comment-box">
-                        <input type="text" id="comment-${image.id}" placeholder="Add a comment...">
-                        <button onclick="addComment('${image.id}')">Post</button>
+                        <div class="details-meta-box">
+                            <p class="meta"><strong>Location:</strong> ${image.location || "N/A"}</p>
+                            <p class="meta"><strong>People:</strong> ${image.people || "N/A"}</p>
+                            <p class="meta"><strong>Tags:</strong> ${(image.tags || []).join(", ") || "No tags"}</p>
+                        </div>
                     </div>
                 </div>
             </div>
