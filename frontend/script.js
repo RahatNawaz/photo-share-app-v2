@@ -36,8 +36,16 @@ if (uploadForm) {
             const result = await response.json();
 
             if (response.ok) {
-                message.innerText = "Image uploaded successfully!";
-                uploadForm.reset();
+                message.innerText = "Image uploaded successfully! Opening details...";
+
+                const uploadedImageId = result && result.data ? result.data.id : null;
+
+                if (uploadedImageId) {
+                    window.location.href = `image.html?id=${uploadedImageId}&from=creator`;
+                } else {
+                    uploadForm.reset();
+                    window.location.href = "creator-dashboard.html";
+                }
             } else {
                 message.innerText = result.error || "Upload failed.";
             }
@@ -559,7 +567,6 @@ async function loadCreatorImages() {
                     <div class="creator-stats-row">
                         <span>♡ ${image.likes || 0} likes</span>
                         <span>💬 ${commentsCount} comments</span>
-                        <span>⭐ ${averageRating}</span>
                     </div>
 
                     <div class="gallery-info-row">
